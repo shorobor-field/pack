@@ -10,42 +10,45 @@ type Post = {
   tags: string[]
   content: string
   user: string
-  rotation?: number
   system?: boolean
+  rotation?: number
 }
-
-const dogEmojis = ['🐕', '🦮', '🐶', '🐕‍🦺', '🐩', '🐾', '🦴']
 
 const pinnedPosts = {
   timeline: {
     content: "everything goes here. this is the main feed.",
     user: "system",
     tags: ["timeline"],
-    system: true
+    system: true,
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   discussion: {
     content: "general chat for anything and everything",
     user: "system",
     tags: ["discussion"],
-    system: true
+    system: true,
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   docs: {
     content: "documentation and longer form writing lives here",
     user: "system",
     tags: ["docs"],
-    system: true
+    system: true,
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   neurotech: {
     content: "discoveries about cognition and productivity",
     user: "system",
     tags: ["neurotech"],
-    system: true
+    system: true,
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   sources: {
     content: "interesting links and resources",
     user: "system",
     tags: ["sources"],
-    system: true
+    system: true,
+    rotation: Math.random() > 0.5 ? 1 : -1
   }
 }
 
@@ -103,7 +106,6 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTag, setActiveTag] = useState('timeline')
   const [newPost, setNewPost] = useState('')
-  const [packEmoji, setPackEmoji] = useState('🐕')
 
   const tags = [
     'timeline',
@@ -116,10 +118,7 @@ export default function Home() {
   useEffect(() => {
     fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       .then(res => res.json())
-      .then(posts => setPosts(posts.map((post: Post) => ({
-        ...post,
-        rotation: Math.random() > 0.5 ? 1 : -1
-      }))))
+      .then(setPosts)
   }, [])
 
   const createPost = async () => {
@@ -152,32 +151,22 @@ export default function Home() {
   const pinnedPost = pinnedPosts[activeTag as keyof typeof pinnedPosts]
 
   return (
-    <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800 flex">
-      <div className="w-48 flex flex-col bg-[#FFF4E0] shadow-lg">
-        <div className="flex flex-col space-y-2 p-2">
-          {tags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setActiveTag(tag)}
-              className={`flex items-center p-2 text-sm transition-all ${
-                activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-        <div className="mt-auto mb-4 px-2">
-          <button 
-            onClick={() => setPackEmoji(dogEmojis[Math.floor(Math.random() * dogEmojis.length)])}
-            className="w-full flex items-center justify-center p-2 text-sm bg-[#FFD580] rounded-lg"
+    <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
+      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg w-48">
+        {tags.map((tag) => (
+          <button
+            key={tag}
+            onClick={() => setActiveTag(tag)}
+            className={`flex items-center p-2 text-sm transition-all ${
+              activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
+            }`}
           >
-            P{packEmoji}ck
+            {tag}
           </button>
-        </div>
+        ))}
       </div>
       
-      <div className="flex-1 max-w-2xl mx-auto p-8 relative">
+      <div className="max-w-2xl mx-auto pl-52 p-8 relative">
         <div className="grid gap-6">
           {pinnedPost && (
             <Post {...pinnedPost} />
@@ -190,7 +179,7 @@ export default function Home() {
             ))}
         </div>
 
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 pl-8">
           <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
