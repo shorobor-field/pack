@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 
 type User = {
   name: string
@@ -13,6 +13,8 @@ type Post = {
   rotation?: number
   system?: boolean
 }
+
+const dogEmojis = ['🐕', '🦮', '🐶', '🐕‍🦺', '🐩', '🐾', '🦴']
 
 const pinnedPosts = {
   timeline: {
@@ -47,8 +49,6 @@ const pinnedPosts = {
   }
 }
 
-const dogEmojis = ['🐕', '🦮', '🐶', '🐕‍🦺', '🐩', '🐾', '🦴']
-
 function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   const users = [
     { name: 'raiyan' },
@@ -79,7 +79,7 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
 
 function Post({ tags, content, user, system, rotation }: Omit<Post, 'id'>) {
   return (
-    <div className={`transform rotate-[${rotation}deg]`}>
+    <div className={`transform ${rotation ? `rotate-${rotation}` : ''}`}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
@@ -103,7 +103,7 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTag, setActiveTag] = useState('timeline')
   const [newPost, setNewPost] = useState('')
-  const [packEmoji, setPackEmoji] = useState(dogEmojis[Math.floor(Math.random() * dogEmojis.length)])
+  const [packEmoji, setPackEmoji] = useState('🐕')
 
   const tags = [
     'timeline',
@@ -113,14 +113,13 @@ export default function Home() {
     'sources'
   ]
 
-  const postRotations = useMemo(() => {
-    return posts.map(() => Math.random() > 0.5 ? 1 : -1)
-  }, [posts.length])
-
   useEffect(() => {
     fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       .then(res => res.json())
-      .then(setPosts)
+      .then(posts => setPosts(posts.map((post: Post) => ({
+        ...post,
+        rotation: Math.random() > 0.5 ? 1 : -1
+      }))))
   }, [])
 
   const createPost = async () => {
@@ -129,7 +128,8 @@ export default function Home() {
     const post = {
       content: newPost,
       user: user.name,
-      tags: [activeTag]
+      tags: [activeTag],
+      rotation: Math.random() > 0.5 ? 1 : -1
     }
 
     const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
@@ -141,8 +141,7 @@ export default function Home() {
     if (res.ok) {
       setPosts(prev => [{
         ...post,
-        id: crypto.randomUUID(),
-        rotation: Math.random() > 0.5 ? 1 : -1
+        id: crypto.randomUUID() 
       }, ...prev])
       setNewPost('')
     }
@@ -153,47 +152,45 @@ export default function Home() {
   const pinnedPost = pinnedPosts[activeTag as keyof typeof pinnedPosts]
 
   return (
-    <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
-      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
-        {tags.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => setActiveTag(tag)}
-            className={`flex items-center p-2 text-sm transition-all ${
-              activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
-            }`}
+    <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800 flex">
+      <div className="w-48 flex flex-col bg-[#FFF4E0] shadow-lg">
+        <div className="flex flex-col space-y-2 p-2">
+          {tags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setActiveTag(tag)}
+              className={`flex items-center p-2 text-sm transition-all ${
+                activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+        <div className="mt-auto mb-4 px-2">
+          <button 
+            onClick={() => setPackEmoji(dogEmojis[Math.floor(Math.random() * dogEmojis.length)])}
+            className="w-full flex items-center justify-center p-2 text-sm bg-[#FFD580] rounded-lg"
           >
-            {tag}
+            P{packEmoji}ck
           </button>
-        ))}
+        </div>
       </div>
       
-      <div className="max-w-2xl ml-48 p-8 relative">
+      <div className="flex-1 max-w-2xl mx-auto p-8 relative">
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post 
-              {...pinnedPost} 
-              rotation={Math.random() > 0.5 ? 1 : -1} 
-            />
+            <Post {...pinnedPost} />
           )}
 
           {posts
             .filter(post => post.tags.includes(activeTag))
-            .map((post, index) => (
-              <Post 
-                key={post.id} 
-                {...post} 
-                rotation={postRotations[index]} 
-              />
+            .map(post => (
+              <Post key={post.id} {...post} />
             ))}
         </div>
 
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg mb-4">
-            <div className="text-center text-xl font-bold mb-2">
-              p{packEmoji}ck
-            </div>
-          </div>
           <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
