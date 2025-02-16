@@ -1,6 +1,10 @@
 "use client"
 import { useState, useEffect } from 'react'
 
+function createRotation() {
+  return (Math.random() * 4 - 2);
+}
+
 type User = {
   name: string
 }
@@ -20,35 +24,35 @@ const pinnedPosts = {
     user: "system",
     tags: ["timeline"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: createRotation()
   },
   discussion: {
     content: "general chat for anything and everything",
     user: "system",
     tags: ["discussion"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: createRotation()
   },
   docs: {
     content: "documentation and longer form writing lives here",
     user: "system",
     tags: ["docs"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: createRotation()
   },
   neurotech: {
     content: "discoveries about cognition and productivity",
     user: "system",
     tags: ["neurotech"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: createRotation()
   },
   sources: {
     content: "interesting links and resources",
     user: "system",
     tags: ["sources"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: createRotation()
   }
 }
 
@@ -82,7 +86,7 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
 
 function Post({ tags, content, user, system, rotation }: Omit<Post, 'id'>) {
   return (
-    <div style={{ transform: rotation === 1 ? 'rotate(1deg)' : 'rotate(-1deg)' }}>
+    <div style={{ transform: `rotate(${rotation}deg)` }}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
@@ -128,7 +132,7 @@ export default function Home() {
       content: newPost,
       user: user.name,
       tags: [activeTag],
-      rotation: Math.random() > 0.5 ? 1 : -1
+      rotation: createRotation()
     }
 
     const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
