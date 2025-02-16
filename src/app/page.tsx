@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 type User = {
   name: string
@@ -10,6 +10,7 @@ type Post = {
   tags: string[]
   content: string
   user: string
+  rotation?: number
   system?: boolean
 }
 
@@ -46,6 +47,8 @@ const pinnedPosts = {
   }
 }
 
+const dogEmojis = ['🐕', '🦮', '🐶', '🐕‍🦺', '🐩', '🐾', '🦴']
+
 function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   const users = [
     { name: 'raiyan' },
@@ -74,11 +77,9 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ tags, content, user, system }: Omit<Post, 'id'>) {
-  const rotation = Math.random() > 0.5 ? 'rotate-1' : '-rotate-1'
-  
+function Post({ tags, content, user, system, rotation }: Omit<Post, 'id'>) {
   return (
-    <div className={`transform ${rotation}`}>
+    <div className={`transform rotate-[${rotation}deg]`}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
@@ -102,6 +103,7 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTag, setActiveTag] = useState('timeline')
   const [newPost, setNewPost] = useState('')
+  const [packEmoji, setPackEmoji] = useState(dogEmojis[Math.floor(Math.random() * dogEmojis.length)])
 
   const tags = [
     'timeline',
@@ -110,6 +112,10 @@ export default function Home() {
     'neurotech',
     'sources'
   ]
+
+  const postRotations = useMemo(() => {
+    return posts.map(() => Math.random() > 0.5 ? 1 : -1)
+  }, [posts.length])
 
   useEffect(() => {
     fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
@@ -135,7 +141,8 @@ export default function Home() {
     if (res.ok) {
       setPosts(prev => [{
         ...post,
-        id: crypto.randomUUID() 
+        id: crypto.randomUUID(),
+        rotation: Math.random() > 0.5 ? 1 : -1
       }, ...prev])
       setNewPost('')
     }
@@ -161,26 +168,38 @@ export default function Home() {
         ))}
       </div>
       
-      <div className="max-w-2xl mx-auto p-8 relative">
+      <div className="max-w-2xl ml-48 p-8 relative">
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post {...pinnedPost} />
+            <Post 
+              {...pinnedPost} 
+              rotation={Math.random() > 0.5 ? 1 : -1} 
+            />
           )}
 
           {posts
             .filter(post => post.tags.includes(activeTag))
-            .map(post => (
-              <Post key={post.id} {...post} />
+            .map((post, index) => (
+              <Post 
+                key={post.id} 
+                {...post} 
+                rotation={postRotations[index]} 
+              />
             ))}
         </div>
 
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
+          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg mb-4">
+            <div className="text-center text-xl font-bold mb-2">
+              p{packEmoji}ck
+            </div>
+          </div>
           <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
               onChange={e => setNewPost(e.target.value)}
               placeholder="what's on your mind..."
-              className="w-full resize-none bg-white font-mono text-gray-800 placeholder-gray-500 focus:outline-none"
+              className="w-full resize-none bg-transparent font-mono text-gray-800 placeholder-gray-500 focus:outline-none"
               rows={3}
             />
             <div className="mt-2 flex justify-end">
