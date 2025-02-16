@@ -53,7 +53,7 @@ function Post({ tags, content, user }: Omit<Post, 'id'>) {
  
  return (
    <div className={`transform ${rotation}`}>
-     <div className="relative bg-white p-6 shadow-lg">
+     <div className="relative bg-white p-6 shadow-lg rounded-lg">
        <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
        <div className="mb-4 border-b border-dashed border-gray-300 pb-2">
          {tags.map(tag => (
@@ -63,7 +63,7 @@ function Post({ tags, content, user }: Omit<Post, 'id'>) {
            </span>
          ))}
        </div>
-       <p className="font-mono">{content}</p>
+       <p className="font-mono text-black">{content}</p>
        <div className="mt-4 text-xs text-gray-500">@{user}</div>
      </div>
    </div>
@@ -137,18 +137,18 @@ export default function Home() {
        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
          <div className="col-span-full">
            <div className="transform rotate-1">
-             <div className="bg-white p-4 shadow-lg">
+             <div className="bg-white p-4 shadow-lg rounded-lg">
                <textarea
                  value={newPost}
                  onChange={e => setNewPost(e.target.value)}
                  placeholder="what's on your mind..."
-                 className="w-full resize-none bg-transparent font-mono focus:outline-none"
+                 className="w-full resize-none bg-transparent font-mono focus:outline-none text-gray-600"
                  rows={3}
                />
                <div className="mt-2 flex justify-end">
                  <button 
                    onClick={createPost}
-                   className="bg-black px-4 py-1 text-sm text-white"
+                   className="bg-black px-4 py-1 text-sm text-white rounded-lg"
                  >
                    post
                  </button>
