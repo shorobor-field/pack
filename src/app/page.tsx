@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 type User = {
   name: string
@@ -10,8 +10,8 @@ type Post = {
   tags: string[]
   content: string
   user: string
-  system?: boolean
   rotation?: number
+  system?: boolean
 }
 
 const pinnedPosts = {
@@ -81,8 +81,10 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
 }
 
 function Post({ tags, content, user, system, rotation }: Omit<Post, 'id'>) {
+  const rotationClass = rotation ? `rotate-${rotation}` : ''
+  
   return (
-    <div className={`transform ${rotation ? `rotate-${rotation}` : ''}`}>
+    <div className={`transform ${rotationClass}`}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
@@ -152,7 +154,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
-      <div className="fixed left-4 top-4 w-48 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
+      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
         {tags.map((tag) => (
           <button
             key={tag}
@@ -166,7 +168,7 @@ export default function Home() {
         ))}
       </div>
       
-      <div className="max-w-2xl ml-52 p-8 relative">
+      <div className="max-w-2xl mx-auto p-8 relative">
         <div className="grid gap-6">
           {pinnedPost && (
             <Post {...pinnedPost} />
