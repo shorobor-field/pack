@@ -12,7 +12,6 @@ type Post = {
   tags: string[]
   content: string
   user: string
-  userEmoji: string
   pinned?: boolean
 }
 
@@ -28,35 +27,30 @@ const pinnedPosts = {
   timeline: {
     content: "everything goes here. this is the main feed.",
     user: "system",
-    userEmoji: "🤖",
     tags: ["timeline"],
     pinned: true
   },
   discussion: {
     content: "general chat for anything and everything",
     user: "system",
-    userEmoji: "🤖",
     tags: ["discussion"],
     pinned: true
   },
   docs: {
     content: "documentation and longer form writing lives here",
     user: "system",
-    userEmoji: "🤖",
     tags: ["docs"],
     pinned: true
   },
   neurotech: {
     content: "discoveries about cognition and productivity",
     user: "system",
-    userEmoji: "🤖",
     tags: ["neurotech"],
     pinned: true
   },
   sources: {
     content: "interesting links and resources",
     user: "system",
-    userEmoji: "🤖",
     tags: ["sources"],
     pinned: true
   }
@@ -64,10 +58,10 @@ const pinnedPosts = {
 
 function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   const users = [
-    { name: 'nosilverv', emoji: '🦊' },
-    { name: 'gf', emoji: '🦋' },
-    { name: 'friend1', emoji: '🌸' },
-    { name: 'friend2', emoji: '🌠' }
+    { name: 'raiyan', emoji: '🦊' },
+    { name: 'zarin', emoji: '🦋' },
+    { name: 'jeba', emoji: '🌸' },
+    { name: 'inan', emoji: '🌠' }
   ]
 
   return (
@@ -91,13 +85,13 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ tags, content, user, userEmoji, pinned }: Omit<Post, 'id'>) {
-  const rotation = Math.random() > 0.5 ? 'rotate-1' : '-rotate-1'
-  
+function Post({ tags, content, user, pinned, firstInChannel }: Omit<Post, 'id'> & { firstInChannel?: boolean }) {
   return (
-    <div className={`transform ${rotation}`}>
+    <div>
       <div className="relative rounded-lg bg-white p-6 shadow-lg">
-        <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
+        {firstInChannel && (
+          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
+        )}
         {pinned && (
           <div className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1.5">
             <Pin size={12} className="text-white" />
@@ -109,7 +103,6 @@ function Post({ tags, content, user, userEmoji, pinned }: Omit<Post, 'id'>) {
             {tags[0]}
           </div>
           <div className="text-xs text-gray-600 flex items-center">
-            <span className="mr-1">{userEmoji}</span>
             {user}
           </div>
         </div>
@@ -142,10 +135,15 @@ export default function Home() {
   const createPost = async () => {
     if (!newPost.trim() || !user) return
 
+    if (newPost.trim() === 'DELETEALLDELETEALL') {
+      setPosts(posts.filter(post => Object.values(pinnedPosts).some(p => p.content === post.content)))
+      setNewPost('')
+      return
+    }
+
     const post = {
       content: newPost,
       user: user.name,
-      userEmoji: user.emoji,
       tags: [activeTag]
     }
 
@@ -167,6 +165,7 @@ export default function Home() {
   if (!user) return <NameSelector onSelect={setUser} />
 
   const pinnedPost = pinnedPosts[activeTag as keyof typeof pinnedPosts]
+  const channelPosts = posts.filter(post => post.tags.includes(activeTag))
 
   return (
     <div className="min-h-screen bg-gray-50 font-mono text-gray-800">
@@ -188,23 +187,25 @@ export default function Home() {
       <div className="max-w-2xl mx-auto p-8 relative">
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post {...pinnedPost} />
+            <Post {...pinnedPost} firstInChannel />
           )}
 
-          {posts
-            .filter(post => post.tags.includes(activeTag))
-            .map(post => (
-              <Post key={post.id} {...post} />
-            ))}
+          {channelPosts.map((post, index) => (
+            <Post 
+              key={post.id} 
+              {...post} 
+              firstInChannel={index === 0} 
+            />
+          ))}
         </div>
 
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-white p-4 shadow-lg">
+          <div className="rounded-lg bg-transparent p-4 shadow-lg">
             <textarea
               value={newPost}
               onChange={e => setNewPost(e.target.value)}
               placeholder="what's on your mind..."
-              className="w-full resize-none bg-gray-50 font-mono text-gray-800 placeholder-gray-500 focus:outline-none"
+              className="w-full resize-none bg-transparent font-mono text-gray-800 placeholder-gray-500 focus:outline-none border-b border-gray-300"
               rows={3}
             />
             <div className="mt-2 flex justify-end">
