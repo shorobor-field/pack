@@ -103,7 +103,7 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTag, setActiveTag] = useState('timeline')
   const [newPost, setNewPost] = useState('')
-  const [packEmoji, setPackEmoji] = useState(dogEmojis[Math.floor(Math.random() * dogEmojis.length)])
+  const packEmoji = dogEmojis[Math.floor(Math.random() * dogEmojis.length)]
 
   const tags = [
     'timeline',
@@ -115,7 +115,7 @@ export default function Home() {
 
   const postRotations = useMemo(() => {
     return posts.map(() => Math.random() > 0.5 ? 1 : -1)
-  }, [posts.length])
+  }, [posts])
 
   useEffect(() => {
     fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
