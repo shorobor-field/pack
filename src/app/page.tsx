@@ -26,19 +26,19 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
  return (
    <div className="fixed inset-0 flex items-center justify-center bg-amber-50">
      <div className="transform rotate-1">
-       <div className="w-72 bg-white p-8 shadow-xl">
-         <h2 className="mb-6 text-center font-mono">who are you?</h2>
+       <div className="w-72 bg-white p-8 shadow-xl rounded-lg">
+         <h2 className="mb-6 text-center font-mono text-black">who are you?</h2>
          <div className="grid grid-cols-2 gap-4">
            {users.map(user => (
              <button
                key={user.name}
                onClick={() => onSelect(user)}
-               className="group flex transform items-center justify-center space-x-2 rounded-lg border-2 border-black bg-white p-3 transition-all hover:-translate-y-0.5 hover:bg-black hover:text-white"
+               className="group flex h-16 transform items-center justify-center space-x-2 rounded-lg border-2 border-black bg-white p-3 transition-all hover:-translate-y-0.5 hover:bg-black hover:text-white"
              >
                <span className="text-xl group-hover:scale-110 group-hover:transform group-hover:transition-all">
                  {user.emoji}
                </span>
-               <span className="font-mono">{user.name}</span>
+               <span className="font-mono text-black group-hover:text-white">{user.name}</span>
              </button>
            ))}
          </div>
