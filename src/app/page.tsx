@@ -81,10 +81,8 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
 }
 
 function Post({ tags, content, user, system, rotation }: Omit<Post, 'id'>) {
-  const rotationClass = rotation ? `rotate-${rotation}` : ''
-  
   return (
-    <div className={`transform ${rotationClass}`}>
+    <div style={{ transform: rotation === 1 ? 'rotate(1deg)' : 'rotate(-1deg)' }}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
