@@ -1,8 +1,8 @@
 "use client"
-import { useState } from 'react'
-import { Hash, Pin } from 'lucide-react'
+import { Hash } from 'lucide-react'
 
-function Post({ tags, content, timestamp, user }) {
+function Post({ tags, content, user }) {
+  // remove timestamp from params
   const rotation = Math.random() > 0.5 ? 'rotate-1' : '-rotate-1'
   
   return (
