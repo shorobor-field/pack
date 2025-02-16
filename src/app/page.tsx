@@ -1,116 +1,4 @@
-<div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
-        {tags.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => setActiveTag(tag)}
-            className={`flex items-center p-2 text-sm transition-all ${
-              activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
-            }`}
-          >
-            {tag}
-          </button>
-        ))}
-        <div className="text-center text-xl font-bold mt-4">
-          p{packEmoji}ck
-        </div>
-      </div>
-      
-      <div className="ml-48 p-8 relative">
-        <div className="max-w-md mx-auto grid gap-6">
-          {pinnedPost && (
-            <Post 
-              {...pinnedPost} 
-              rotation={Math.random() > 0.5 ? 1 : -1} 
-            />
-          )}
-
-          {posts
-            .filter(post => post.tags.includes(activeTag))
-            .map((post, index) => (
-              <Post 
-                key={post.id} 
-                {...post} 
-                rotation={postRotations[index]} 
-              />
-            ))}
-        </div>
-
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
-            <textarea
-              value={newPost}
-              onChange={e => setNewPost(e.target.value)}
-              placeholder="what's on your mind..."
-              className="w-full resize-none bg-transparent font-mono text-gray-800 placeholder-gray-500 focus:outline-none"
-              rows={3}
-            />
-            <div className="mt-2 flex justify-end">
-              <button 
-                onClick={createPost}
-                className="rounded-lg bg-[#FFD580] px-4 py-1 text-sm text-gray-800 hover:bg-[#FFEBC1]"
-              >
-                post
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
-        {tags.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => setActiveTag(tag)}
-            className={`flex items-center p-2 text-sm transition-all ${
-              activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
-            }`}
-          >
-            {tag}
-          </button>
-        ))}
-        <div className="text-center text-xl font-bold mt-4">
-          p{packEmoji}ck
-        </div>
-      </div>
-      
-      <div className="max-w-2xl ml-48 p-8 relative">
-        <div className="grid gap-6 max-w-md mx-auto">
-          {pinnedPost && (
-            <Post 
-              {...pinnedPost} 
-              rotation={Math.random() > 0.5 ? 1 : -1} 
-            />
-          )}
-
-          {posts
-            .filter(post => post.tags.includes(activeTag))
-            .map((post, index) => (
-              <Post 
-                key={post.id} 
-                {...post} 
-                rotation={postRotations[index]} 
-              />
-            ))}
-        </div>
-
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
-            <textarea
-              value={newPost}
-              onChange={e => setNewPost(e.target.value)}
-              placeholder="what's on your mind..."
-              className="w-full resize-none bg-transparent font-mono text-gray-800 placeholder-gray-500 focus:outline-none"
-              rows={3}
-            />
-            <div className="mt-2 flex justify-end">
-              <button 
-                onClick={createPost}
-                className="rounded-lg bg-[#FFD580] px-4 py-1 text-sm text-gray-800 hover:bg-[#FFEBC1]"
-              >
-                post
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>"use client"
+"use client"
 import { useState, useEffect, useMemo } from 'react'
 
 type User = {
@@ -215,7 +103,7 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTag, setActiveTag] = useState('timeline')
   const [newPost, setNewPost] = useState('')
-  const packEmoji = dogEmojis[Math.floor(Math.random() * dogEmojis.length)]
+  const [packEmoji, setPackEmoji] = useState(dogEmojis[Math.floor(Math.random() * dogEmojis.length)])
 
   const tags = [
     'timeline',
@@ -227,7 +115,7 @@ export default function Home() {
 
   const postRotations = useMemo(() => {
     return posts.map(() => Math.random() > 0.5 ? 1 : -1)
-  }, [posts])
+  }, [posts.length])
 
   useEffect(() => {
     fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
