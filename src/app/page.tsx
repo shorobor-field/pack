@@ -1,5 +1,4 @@
 "use client"
-import { Pin } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 type User = {
@@ -11,7 +10,6 @@ type Post = {
   tags: string[]
   content: string
   user: string
-  pinned?: boolean
   system?: boolean
 }
 
@@ -20,35 +18,30 @@ const pinnedPosts = {
     content: "everything goes here. this is the main feed.",
     user: "system",
     tags: ["timeline"],
-    pinned: true,
     system: true
   },
   discussion: {
     content: "general chat for anything and everything",
     user: "system",
     tags: ["discussion"],
-    pinned: true,
     system: true
   },
   docs: {
     content: "documentation and longer form writing lives here",
     user: "system",
     tags: ["docs"],
-    pinned: true,
     system: true
   },
   neurotech: {
     content: "discoveries about cognition and productivity",
     user: "system",
     tags: ["neurotech"],
-    pinned: true,
     system: true
   },
   sources: {
     content: "interesting links and resources",
     user: "system",
     tags: ["sources"],
-    pinned: true,
     system: true
   }
 }
@@ -62,15 +55,15 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   ]
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white">
-      <div className="w-80 rounded-lg bg-gray-100 p-8 shadow-xl">
+    <div className="fixed inset-0 flex items-center justify-center bg-[#FFE5B4]">
+      <div className="w-80 rounded-lg bg-[#FFF4E0] p-8 shadow-xl">
         <h2 className="mb-6 text-center font-mono text-gray-800">who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-gray-300 bg-white p-3 text-gray-800 transition-all hover:bg-gray-100"
+              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-[#FFD580] bg-white p-3 text-gray-800 transition-all hover:bg-[#FFF4E0]"
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -81,16 +74,16 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ tags, content, user, pinned, system }: Omit<Post, 'id'>) {
+function Post({ tags, content, user, system }: Omit<Post, 'id'>) {
   const rotation = Math.random() > 0.5 ? 'rotate-1' : '-rotate-1'
   
   return (
     <div className={`transform ${rotation}`}>
-      <div className="relative rounded-lg bg-white p-6 shadow-lg">
+      <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
         )}
-        <div className="mb-4 border-b border-dashed border-gray-300 pb-2 flex justify-between items-center">
+        <div className="mb-4 border-b border-dashed border-[#FFD580] pb-2 flex justify-between items-center">
           <div className="flex items-center text-xs text-gray-600">
             {tags[0]}
           </div>
@@ -153,14 +146,14 @@ export default function Home() {
   const pinnedPost = pinnedPosts[activeTag as keyof typeof pinnedPosts]
 
   return (
-    <div className="min-h-screen bg-gray-50 font-mono text-gray-800">
-      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-white p-2 shadow-lg">
+    <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
+      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
         {tags.map((tag) => (
           <button
             key={tag}
             onClick={() => setActiveTag(tag)}
             className={`flex items-center p-2 text-sm transition-all ${
-              activeTag === tag ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100'
+              activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
             }`}
           >
             {tag}
@@ -182,7 +175,7 @@ export default function Home() {
         </div>
 
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-white p-4 shadow-lg">
+          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
               onChange={e => setNewPost(e.target.value)}
@@ -193,7 +186,7 @@ export default function Home() {
             <div className="mt-2 flex justify-end">
               <button 
                 onClick={createPost}
-                className="rounded-lg bg-gray-200 px-4 py-1 text-sm text-gray-800 hover:bg-gray-300"
+                className="rounded-lg bg-[#FFD580] px-4 py-1 text-sm text-gray-800 hover:bg-[#FFEBC1]"
               >
                 post
               </button>
