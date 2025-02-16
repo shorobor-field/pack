@@ -1,45 +1,4 @@
-const generateRotation = () => {
-  const angles = [-3, -2, -1, 1, 2, 3];
-  return angles[Math.floor(Math.random() * angles.length)];
-}
-
-const pinnedPosts = {
-  timeline: {
-    content: "everything goes here. this is the main feed.",
-    user: "system",
-    tags: ["timeline"],
-    system: true,
-    rotation: generateRotation()
-  },
-  discussion: {
-    content: "general chat for anything and everything",
-    user: "system",
-    tags: ["discussion"],
-    system: true,
-    rotation: generateRotation()
-  },
-  docs: {
-    content: "documentation and longer form writing lives here",
-    user: "system",
-    tags: ["docs"],
-    system: true,
-    rotation: generateRotation()
-  },
-  neurotech: {
-    content: "discoveries about cognition and productivity",
-    user: "system",
-    tags: ["neurotech"],
-    system: true,
-    rotation: generateRotation()
-  },
-  sources: {
-    content: "interesting links and resources",
-    user: "system",
-    tags: ["sources"],
-    system: true,
-    rotation: generateRotation()
-  }
-}"use client"
+"use client"
 import { useState, useEffect } from 'react'
 
 type User = {
@@ -60,10 +19,7 @@ const generateRotation = () => {
   return angles[Math.floor(Math.random() * angles.length)];
 }
 
-const generateRotation = () => {
-  const angles = [-3, -2, -1, 1, 2, 3];
-  return angles[Math.floor(Math.random() * angles.length)];
-}
+// Removed unused channelEmojis constant
 
 const pinnedPosts = {
   timeline: {
