@@ -19,12 +19,9 @@ const generateRotation = () => {
   return angles[Math.floor(Math.random() * angles.length)];
 }
 
-const channelEmojis = {
-  timeline: '⏳',
-  discussion: '🗣️',
-  docs: '📋',
-  neurotech: '🔬',
-  sources: '🗃️'
+const generateRotation = () => {
+  const angles = [-3, -2, -1, 1, 2, 3];
+  return angles[Math.floor(Math.random() * angles.length)];
 }
 
 const pinnedPosts = {
