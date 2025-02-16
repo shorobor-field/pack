@@ -1,11 +1,51 @@
 "use client"
+import { useState, useEffect } from 'react'
 import { Hash } from 'lucide-react'
+
+type User = {
+ name: string
+ emoji: string
+}
 
 type Post = {
  id: string
  tags: string[]
  content: string
  user: string
+}
+
+// name selector modal component
+function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
+ const users = [
+   { name: 'nosilverv', emoji: '🦊' },
+   { name: 'gf', emoji: '🦋' },
+   { name: 'friend1', emoji: '🌸' },
+   { name: 'friend2', emoji: '🌠' }
+ ]
+
+ return (
+   <div className="fixed inset-0 flex items-center justify-center bg-amber-50">
+     <div className="transform rotate-1">
+       <div className="w-72 bg-white p-8 shadow-xl">
+         <h2 className="mb-6 text-center font-mono">who are you?</h2>
+         <div className="grid grid-cols-2 gap-4">
+           {users.map(user => (
+             <button
+               key={user.name}
+               onClick={() => onSelect(user)}
+               className="group flex transform items-center justify-center space-x-2 rounded-lg border-2 border-black bg-white p-3 transition-all hover:-translate-y-0.5 hover:bg-black hover:text-white"
+             >
+               <span className="text-xl group-hover:scale-110 group-hover:transform group-hover:transition-all">
+                 {user.emoji}
+               </span>
+               <span className="font-mono">{user.name}</span>
+             </button>
+           ))}
+         </div>
+       </div>
+     </div>
+   </div>
+ )
 }
 
 function Post({ tags, content, user }: Omit<Post, 'id'>) {
@@ -31,6 +71,11 @@ function Post({ tags, content, user }: Omit<Post, 'id'>) {
 }
 
 export default function Home() {
+ const [user, setUser] = useState<User | null>(null)
+ const [posts, setPosts] = useState<Post[]>([])
+ const [activeTag, setActiveTag] = useState('timeline')
+ const [newPost, setNewPost] = useState('')
+
  const tags = {
    timeline: 'everything',
    discussion: 'general chat',
@@ -39,10 +84,37 @@ export default function Home() {
    sources: 'resources'
  }
 
- const posts = [
-   {id: '1', content: 'test post', tags: ['timeline'], user: 'nosilverv'},
-   {id: '2', content: 'another test', tags: ['docs'], user: 'nosilverv'}
- ]
+ useEffect(() => {
+   fetch('https://fbc62141-pack-api.raiyanrahmanxx.workers.dev/posts')
+     .then(res => res.json())
+     .then(setPosts)
+ }, [])
+
+ const createPost = async () => {
+   if (!newPost.trim() || !user) return
+
+   const post = {
+     content: newPost,
+     user: user.name,
+     tags: [activeTag]
+   }
+
+   const res = await fetch('https://fbc62141-pack-api.raiyanrahmanxx.workers.dev/posts', {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify(post)
+   })
+
+   if (res.ok) {
+     setPosts(prev => [{
+       ...post,
+       id: crypto.randomUUID() // temp id until refetch
+     }, ...prev])
+     setNewPost('')
+   }
+ }
+
+ if (!user) return <NameSelector onSelect={setUser} />
 
  return (
    <div className="min-h-screen bg-amber-50 font-mono">
@@ -50,7 +122,10 @@ export default function Home() {
        {Object.entries(tags).map(([tag, label]) => (
          <button
            key={tag}
-           className={`flex items-center p-2 text-sm transition-all text-black hover:bg-gray-100`}
+           onClick={() => setActiveTag(tag)}
+           className={`flex items-center p-2 text-sm transition-all ${
+             activeTag === tag ? 'bg-black text-white' : 'text-black hover:bg-gray-100'
+           }`}
          >
            <Hash size={14} className="mr-1" />
            {label}
@@ -60,9 +135,33 @@ export default function Home() {
      
      <div className="ml-48 p-8">
        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-         {posts.map(post => (
-           <Post key={post.id} {...post} />
-         ))}
+         <div className="col-span-full">
+           <div className="transform rotate-1">
+             <div className="bg-white p-4 shadow-lg">
+               <textarea
+                 value={newPost}
+                 onChange={e => setNewPost(e.target.value)}
+                 placeholder="what's on your mind..."
+                 className="w-full resize-none bg-transparent font-mono focus:outline-none"
+                 rows={3}
+               />
+               <div className="mt-2 flex justify-end">
+                 <button 
+                   onClick={createPost}
+                   className="bg-black px-4 py-1 text-sm text-white"
+                 >
+                   post
+                 </button>
+               </div>
+             </div>
+           </div>
+         </div>
+
+         {posts
+           .filter(post => post.tags.includes(activeTag))
+           .map(post => (
+             <Post key={post.id} {...post} />
+           ))}
        </div>
      </div>
    </div>
