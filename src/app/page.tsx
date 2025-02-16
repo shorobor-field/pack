@@ -33,12 +33,12 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
              <button
                key={user.name}
                onClick={() => onSelect(user)}
-               className="group flex h-16 transform items-center justify-center space-x-2 rounded-lg border-2 border-black bg-white p-3 transition-all hover:-translate-y-0.5 hover:bg-black hover:text-white"
+               className="group flex h-20 transform items-center justify-center space-x-2 rounded-lg border-2 border-black bg-white p-3 transition-all hover:-translate-y-0.5 hover:bg-black hover:text-white"
              >
                <span className="text-xl group-hover:scale-110 group-hover:transform group-hover:transition-all">
                  {user.emoji}
                </span>
-               <span className="font-mono text-black group-hover:text-white">{user.name}</span>
+               <span className="font-mono text-black group-hover:text-white break-words">{user.name}</span>
              </button>
            ))}
          </div>
