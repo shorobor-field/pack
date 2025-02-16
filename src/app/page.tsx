@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 type User = {
   name: string
@@ -11,15 +11,8 @@ type Post = {
   content: string
   user: string
   system?: boolean
-  rotation: number
+  rotation?: number
 }
-
-const generateRotation = () => {
-  const angles = [-3, -2, -1, 1, 2, 3];
-  return angles[Math.floor(Math.random() * angles.length)];
-}
-
-// Removed unused channelEmojis constant
 
 const pinnedPosts = {
   timeline: {
@@ -27,35 +20,35 @@ const pinnedPosts = {
     user: "system",
     tags: ["timeline"],
     system: true,
-    rotation: generateRotation()
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   discussion: {
     content: "general chat for anything and everything",
     user: "system",
     tags: ["discussion"],
     system: true,
-    rotation: generateRotation()
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   docs: {
     content: "documentation and longer form writing lives here",
     user: "system",
     tags: ["docs"],
     system: true,
-    rotation: generateRotation()
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   neurotech: {
     content: "discoveries about cognition and productivity",
     user: "system",
     tags: ["neurotech"],
     system: true,
-    rotation: generateRotation()
+    rotation: Math.random() > 0.5 ? 1 : -1
   },
   sources: {
     content: "interesting links and resources",
     user: "system",
     tags: ["sources"],
     system: true,
-    rotation: generateRotation()
+    rotation: Math.random() > 0.5 ? 1 : -1
   }
 }
 
@@ -68,15 +61,15 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   ]
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white">
-      <div className="w-80 rounded-lg bg-gray-100 p-8 shadow-xl">
+    <div className="fixed inset-0 flex items-center justify-center bg-[#FFE5B4]">
+      <div className="w-80 rounded-lg bg-[#FFF4E0] p-8 shadow-xl">
         <h2 className="mb-6 text-center font-mono text-gray-800">who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-gray-300 bg-white p-3 text-gray-800 transition-all hover:bg-gray-100"
+              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-[#FFD580] bg-white p-3 text-gray-800 transition-all hover:bg-[#FFF4E0]"
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -89,7 +82,7 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
 
 function Post({ tags, content, user, system, rotation }: Omit<Post, 'id'>) {
   return (
-    <div className={`transform rotate-${rotation}`}>
+    <div className={`transform ${rotation ? `rotate-${rotation}` : ''}`}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
@@ -125,13 +118,7 @@ export default function Home() {
   useEffect(() => {
     fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       .then(res => res.json())
-      .then(fetchedPosts => {
-        const postsWithRotation = fetchedPosts.map((post: Omit<Post, 'rotation'>) => ({
-          ...post,
-          rotation: generateRotation()
-        }));
-        setPosts(postsWithRotation);
-      })
+      .then(setPosts)
   }, [])
 
   const createPost = async () => {
@@ -141,7 +128,7 @@ export default function Home() {
       content: newPost,
       user: user.name,
       tags: [activeTag],
-      rotation: generateRotation()
+      rotation: Math.random() > 0.5 ? 1 : -1
     }
 
     const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
@@ -165,7 +152,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
-      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg w-32">
+      <div className="fixed left-4 top-4 w-48 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
         {tags.map((tag) => (
           <button
             key={tag}
@@ -179,8 +166,8 @@ export default function Home() {
         ))}
       </div>
       
-      <div className="max-w-3xl mx-auto pl-36 p-8 relative">
-        <div className="grid gap-6 max-w-xl mx-auto">
+      <div className="max-w-2xl ml-52 p-8 relative">
+        <div className="grid gap-6">
           {pinnedPost && (
             <Post {...pinnedPost} />
           )}
@@ -192,7 +179,7 @@ export default function Home() {
             ))}
         </div>
 
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-xl px-4 pl-8">
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
           <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
