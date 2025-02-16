@@ -14,41 +14,43 @@ type Post = {
   rotation?: number
 }
 
+const generateRotation = () => Math.random() > 0.5 ? 1 : -1
+
 const pinnedPosts = {
   timeline: {
     content: "everything goes here. this is the main feed.",
     user: "system",
     tags: ["timeline"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: generateRotation()
   },
   discussion: {
     content: "general chat for anything and everything",
     user: "system",
     tags: ["discussion"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: generateRotation()
   },
   docs: {
     content: "documentation and longer form writing lives here",
     user: "system",
     tags: ["docs"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: generateRotation()
   },
   neurotech: {
     content: "discoveries about cognition and productivity",
     user: "system",
     tags: ["neurotech"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: generateRotation()
   },
   sources: {
     content: "interesting links and resources",
     user: "system",
     tags: ["sources"],
     system: true,
-    rotation: Math.random() > 0.5 ? 1 : -1
+    rotation: generateRotation()
   }
 }
 
@@ -128,7 +130,7 @@ export default function Home() {
       content: newPost,
       user: user.name,
       tags: [activeTag],
-      rotation: Math.random() > 0.5 ? 1 : -1
+      rotation: generateRotation()
     }
 
     const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
@@ -152,7 +154,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
-      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg w-48">
+      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg w-32">
         {tags.map((tag) => (
           <button
             key={tag}
@@ -166,8 +168,8 @@ export default function Home() {
         ))}
       </div>
       
-      <div className="max-w-2xl mx-auto pl-52 p-8 relative">
-        <div className="grid gap-6">
+      <div className="max-w-3xl mx-auto pl-36 p-8 relative">
+        <div className="grid gap-6 max-w-xl mx-auto">
           {pinnedPost && (
             <Post {...pinnedPost} />
           )}
@@ -179,7 +181,7 @@ export default function Home() {
             ))}
         </div>
 
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 pl-8">
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-xl px-4 pl-8">
           <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
