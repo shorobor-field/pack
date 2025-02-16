@@ -117,11 +117,29 @@ export default function Home() {
     'sources'
   ]
 
-  useEffect(() => {
-    fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
-      .then(res => res.json())
-      .then(setPosts)
-  }, [])
+  type Post = {
+  id: string
+  tags: string[]
+  content: string
+  user: string
+  system?: boolean
+  rotation: number
+}
+
+const generateRotation = () => Math.random() > 0.5 ? 1 : -1
+
+useEffect(() => {
+  fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
+    .then(res => res.json())
+    .then(fetchedPosts => {
+      // Add rotation to fetched posts if not present
+      const postsWithRotation = fetchedPosts.map((post: Omit<Post, 'rotation'>) => ({
+        ...post,
+        rotation: generateRotation()
+      }));
+      setPosts(postsWithRotation);
+    })
+}, [])
 
   const createPost = async () => {
     if (!newPost.trim() || !user) return
