@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 
 type User = {
   name: string
