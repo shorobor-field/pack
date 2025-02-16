@@ -14,6 +14,39 @@ type Post = {
  user: string
 }
 
+const PINNED_POSTS = {
+ timeline: {
+   content: "everything goes here. this is the main feed.",
+   user: "system",
+   tags: ["timeline"],
+   id: "pinned-timeline"
+ },
+ discussion: {
+   content: "general chat space. keep it real.",
+   user: "system", 
+   tags: ["discussion"],
+   id: "pinned-discussion"
+ },
+ docs: {
+   content: "documentation and writeups live here.",
+   user: "system",
+   tags: ["docs"],
+   id: "pinned-docs"
+ },
+ neurotech: {
+   content: "discoveries and experiments in getting better.",
+   user: "system",
+   tags: ["neurotech"],
+   id: "pinned-neurotech"
+ },
+ sources: {
+   content: "resources and links worth keeping.",
+   user: "system",
+   tags: ["sources"],
+   id: "pinned-sources"
+ }
+}
+
 // name selector modal component
 function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
  const users = [
@@ -156,7 +189,8 @@ export default function Home() {
              </div>
            </div>
          </div>
-
+         
+         {PINNED_POSTS[activeTag] && <Post {...PINNED_POSTS[activeTag]} />}
          {posts
            .filter(post => post.tags.includes(activeTag))
            .map(post => (
