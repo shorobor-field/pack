@@ -1,6 +1,6 @@
 "use client"
 import { useState } from 'react'
-import { Hash, Pin, Image, Eye, Edit, MessageCircle } from 'lucide-react'
+import { Hash } from 'lucide-react'
 
 export default function Home() {
   const [activeTag, setActiveTag] = useState('timeline')
