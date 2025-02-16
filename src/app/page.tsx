@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
-import { Hash, Pin } from 'lucide-react'
+import { Pin } from 'lucide-react'
 
 type User = {
   name: string
