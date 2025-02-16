@@ -186,8 +186,8 @@ useEffect(() => {
         ))}
       </div>
       
-      <div className="max-w-3xl mx-auto pl-36 p-8 relative">
-        <div className="grid gap-6 max-w-xl mx-auto">
+      <div className="max-w-4xl mx-auto pl-36 p-8 relative">
+        <div className="grid gap-6 max-w-2xl mx-auto">
           {pinnedPost && (
             <Post {...pinnedPost} />
           )}
@@ -199,7 +199,7 @@ useEffect(() => {
             ))}
         </div>
 
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-xl px-4 pl-8">
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 pl-8">
           <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
