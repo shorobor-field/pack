@@ -1,7 +1,13 @@
 "use client"
 import { Hash } from 'lucide-react'
+Copytype Post = {
+  id: string
+  tags: string[]
+  content: string
+  user: string
+}
 
-function Post({ tags, content, user }) {
+function Post({ tags, content, user }: Omit<Post, 'id'>) {
   // remove timestamp from params
   const rotation = Math.random() > 0.5 ? 'rotate-1' : '-rotate-1'
   
