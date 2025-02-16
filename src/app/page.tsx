@@ -123,7 +123,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    fetch('pack-api.raiyanrahmanxx.workers.dev/posts')
+    fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       .then(res => res.json())
       .then(setPosts)
   }, [])
@@ -137,7 +137,7 @@ export default function Home() {
       tags: [activeTag]
     }
 
-    const res = await fetch('pack-api.raiyanrahmanxx.workers.dev/posts', {
+    const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(post)
