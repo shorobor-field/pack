@@ -1,4 +1,42 @@
-return (
+function Post({ 
+  tags, 
+  content, 
+  user, 
+  system, 
+  rotation, 
+  onDelete, 
+  id 
+}: Omit<Post, 'content'> & { 
+  content: string, 
+  onDelete?: (id: string) => void 
+}) {
+  return (
+    <div className={`transform rotate-[${rotation}deg] relative group`}>
+      <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
+        {system && (
+          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
+        )}
+        <div className="mb-4 border-b border-dashed border-[#FFD580] pb-2 flex justify-between items-center">
+          <div className="flex items-center text-xs text-gray-600">
+            {tags[0]}
+          </div>
+          <div className="text-xs text-gray-600">
+            {user}
+          </div>
+        </div>
+        <p className="font-mono text-gray-800">{content}</p>
+        {onDelete && !system && (
+          <button 
+            onClick={() => onDelete(id)}
+            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-red-500 text-xs"
+          >
+            × delete
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}  return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800 flex">
       <div className="fixed left-4 top-4 w-40 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
         <div className="text-center text-xl font-bold mb-2">
