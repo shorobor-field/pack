@@ -1,6 +1,6 @@
 "use client"
-import { useState, useEffect } from 'react'
 import { Pin } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 type User = {
   name: string
@@ -71,15 +71,15 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   ]
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-base">
-      <div className="w-80 rounded-lg bg-mantle p-8 shadow-xl">
-        <h2 className="mb-6 text-center font-mono text-text">who are you?</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-white">
+      <div className="w-80 rounded-lg bg-gray-100 p-8 shadow-xl">
+        <h2 className="mb-6 text-center font-mono text-gray-800">who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-surface0 bg-base p-3 text-text transition-all hover:bg-surface0"
+              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-gray-300 bg-white p-3 text-gray-800 transition-all hover:bg-gray-100"
             >
               <span className="text-xl mr-2">{user.emoji}</span>
               <span className="font-mono">{user.name}</span>
@@ -96,24 +96,24 @@ function Post({ tags, content, user, userEmoji, pinned }: Omit<Post, 'id'>) {
   
   return (
     <div className={`transform ${rotation}`}>
-      <div className="relative rounded-lg bg-base p-6 shadow-lg">
-        <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red" />
+      <div className="relative rounded-lg bg-white p-6 shadow-lg">
+        <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
         {pinned && (
-          <div className="absolute -right-2 -top-2 rounded-full bg-red p-1.5">
-            <Pin size={12} className="text-base" />
+          <div className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1.5">
+            <Pin size={12} className="text-white" />
           </div>
         )}
-        <div className="mb-4 border-b border-dashed border-surface0 pb-2 flex justify-between items-center">
-          <div className="flex items-center text-xs text-subtext0">
+        <div className="mb-4 border-b border-dashed border-gray-300 pb-2 flex justify-between items-center">
+          <div className="flex items-center text-xs text-gray-600">
             <span className="mr-1">{channelEmojis[tags[0] as keyof typeof channelEmojis]}</span>
             {tags[0]}
           </div>
-          <div className="text-xs text-subtext0 flex items-center">
+          <div className="text-xs text-gray-600 flex items-center">
             <span className="mr-1">{userEmoji}</span>
             {user}
           </div>
         </div>
-        <p className="font-mono text-text">{content}</p>
+        <p className="font-mono text-gray-800">{content}</p>
       </div>
     </div>
   )
@@ -169,14 +169,14 @@ export default function Home() {
   const pinnedPost = pinnedPosts[activeTag as keyof typeof pinnedPosts]
 
   return (
-    <div className="min-h-screen bg-base font-mono text-text">
-      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-mantle p-2 shadow-lg">
+    <div className="min-h-screen bg-gray-50 font-mono text-gray-800">
+      <div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-white p-2 shadow-lg">
         {Object.entries(tags).map(([tag, emoji]) => (
           <button
             key={tag}
             onClick={() => setActiveTag(tag)}
             className={`flex items-center p-2 text-sm transition-all ${
-              activeTag === tag ? 'bg-surface0 text-text' : 'hover:bg-surface0'
+              activeTag === tag ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100'
             }`}
           >
             <span className="mr-2">{emoji}</span>
@@ -199,18 +199,18 @@ export default function Home() {
         </div>
 
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-mantle p-4 shadow-lg">
+          <div className="rounded-lg bg-white p-4 shadow-lg">
             <textarea
               value={newPost}
               onChange={e => setNewPost(e.target.value)}
               placeholder="what's on your mind..."
-              className="w-full resize-none bg-base font-mono text-text placeholder-subtext0 focus:outline-none"
+              className="w-full resize-none bg-gray-50 font-mono text-gray-800 placeholder-gray-500 focus:outline-none"
               rows={3}
             />
             <div className="mt-2 flex justify-end">
               <button 
                 onClick={createPost}
-                className="rounded-lg bg-surface0 px-4 py-1 text-sm text-text hover:bg-surface1"
+                className="rounded-lg bg-gray-200 px-4 py-1 text-sm text-gray-800 hover:bg-gray-300"
               >
                 post
               </button>
