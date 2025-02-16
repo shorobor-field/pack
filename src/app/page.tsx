@@ -1,4 +1,9 @@
-<div className="fixed left-4 top-4 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
+return (
+    <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800 flex">
+      <div className="fixed left-4 top-4 w-40 flex flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
+        <div className="text-center text-xl font-bold mb-2">
+          p{packEmoji}ck
+        </div>
         {tags.map((tag) => (
           <button
             key={tag}
@@ -10,34 +15,31 @@
             {tag}
           </button>
         ))}
-        <div className="text-center text-xl font-bold mt-4">
-          p{packEmoji}ck
-        </div>
       </div>
       
-      <div className="max-w-2xl mx-auto pl-48 p-8 relative">
-        <div className="grid gap-6 max-w-xl mx-auto">
-          {pinnedPost && (
-            <Post 
-              {...pinnedPost} 
-              rotation={Math.random() > 0.5 ? 1 : -1} 
-            />
-          )}
-
-          {posts
-            .filter(post => post.tags.includes(activeTag))
-            .map((post, index) => (
+      <div className="w-full pl-48 p-8 flex justify-center">
+        <div className="w-full max-w-2xl">
+          <div className="grid gap-6">
+            {pinnedPost && (
               <Post 
-                key={post.id} 
-                {...post} 
-                rotation={postRotations[index]} 
-                onDelete={deletePost}
+                {...pinnedPost} 
+                rotation={Math.random() > 0.5 ? 1 : -1} 
               />
-            ))}
-        </div>
+            )}
 
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
+            {posts
+              .filter(post => post.tags.includes(activeTag))
+              .map((post, index) => (
+                <Post 
+                  key={post.id} 
+                  {...post} 
+                  rotation={postRotations[index]} 
+                  onDelete={deletePost}
+                />
+              ))}
+          </div>
+
+          <div className="mt-4 rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
             <textarea
               value={newPost}
               onChange={e => setNewPost(e.target.value)}
@@ -55,7 +57,9 @@
             </div>
           </div>
         </div>
-      </div>function Post({ tags, content, user, system, rotation, onDelete, id }: Omit<Post, 'content'> & { 
+      </div>
+    </div>
+  )function Post({ tags, content, user, system, rotation, onDelete, id }: Omit<Post, 'content'> & { 
   content: string, 
   onDelete?: (id: string) => void 
 }) {
