@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
+import { Upload, Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
+import Image from 'next/image'
 
 //hidebar
 import './globals.css' // Add this to import custom CSS
@@ -213,9 +214,11 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], th
         )}
         {image && (
           <div className="mb-4 w-full">
-            <img 
+            <Image
               src={image} 
-              alt="Post image" 
+              alt="Post image"
+              width={800} 
+              height={600} 
               className="w-full h-auto object-cover rounded-lg mb-4" 
             />
           </div>
@@ -280,7 +283,7 @@ function NewPostEditor({ onSubmit, theme }: {
     // Advanced multi-pass unsharp masking
     const passes = 3;
     const baseAmount = 1.2;
-    let imageData = ctx.getImageData(0, 0, width, height);
+    const imageData = ctx.getImageData(0, 0, width, height);
     
     for (let pass = 0; pass < passes; pass++) {
       const blur = ctx.createImageData(width, height);
