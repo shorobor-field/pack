@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from 'react'
-import { formatDistanceToNow, format, isAfter, sub } from 'date-fns'
+import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
 import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil } from 'lucide-react'
 
@@ -18,52 +18,7 @@ type Post = {
   system?: boolean
 }
 
-const createRotation = () => (Math.random() * 4 - 2)
-
-const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
-  timeline: {
-    content: "everything goes here. this is the main feed.",
-    user: "system",
-    tags: ["timeline"],
-    system: true,
-    rotation: createRotation(),
-    timestamp: new Date().toISOString()
-  },
-  discussion: {
-    content: "general chat for anything and everything",
-    user: "system",
-    tags: ["discussion"],
-    system: true,
-    rotation: createRotation(),
-    timestamp: new Date().toISOString()
-  },
-  docs: {
-    content: "documentation and longer form writing lives here",
-    user: "system",
-    tags: ["docs"],
-    system: true,
-    rotation: createRotation(),
-    timestamp: new Date().toISOString()
-  },
-  neurotech: {
-    content: "discoveries about cognition and productivity",
-    user: "system",
-    tags: ["neurotech"],
-    system: true,
-    rotation: createRotation(),
-    timestamp: new Date().toISOString()
-  },
-  sources: {
-    content: "interesting links and resources",
-    user: "system",
-    tags: ["sources"],
-    system: true,
-    rotation: createRotation(),
-    timestamp: new Date().toISOString()
-  }
-}
-
-const tagIcons = {
+const channelIcons = {
   timeline: Layout,
   discussion: MessageSquare,
   docs: FileText,
@@ -71,26 +26,65 @@ const tagIcons = {
   sources: Link
 }
 
+const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
+  timeline: {
+    content: "everything goes here. this is the main feed.",
+    user: "system",
+    tags: ["timeline"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  discussion: {
+    content: "general chat for anything and everything",
+    user: "system",
+    tags: ["discussion"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  docs: {
+    content: "documentation and longer form writing lives here",
+    user: "system",
+    tags: ["docs"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  neurotech: {
+    content: "discoveries about cognition and productivity",
+    user: "system",
+    tags: ["neurotech"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  sources: {
+    content: "interesting links and resources",
+    user: "system",
+    tags: ["sources"],
+    system: true,
+    timestamp: new Date().toISOString()
+  }
+}
+
 function formatPostDate(timestamp: string) {
   const date = new Date(timestamp)
   const now = new Date()
-  const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
   
-  if (diffInDays >= 7) {
-    return format(date, 'dd-MM-yyyy')
+  if (isAfter(date, sub(now, { hours: 1 }))) {
+    return formatDistance(date, now, { addSuffix: true })
+      .replace('about ', '')
+      .replace('less than a minute ago', 'just now')
   }
   
-  if (diffInDays >= 1) {
-    return `${diffInDays} days ago`
+  if (isAfter(date, sub(now, { days: 1 }))) {
+    const hours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
   }
   
-  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-  if (diffInHours >= 1) {
-    return `${diffInHours} hours ago`
+  if (isAfter(date, sub(now, { days: 7 }))) {
+    const days = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`
   }
   
-  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-  return `${diffInMinutes} minutes ago`
+  return format(date, 'dd-MM-yyyy')
 }
 
 function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
@@ -110,7 +104,7 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-[#FFD580] bg-white p-3 text-gray-800 transition-all hover:bg-[#FFF4E0]"
+              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-[#FFD580] bg-white p-3 text-gray-800 transition-all hover:bg-[#FFEBC1]"
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -121,15 +115,15 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ content, user, system, rotation, timestamp }: Omit<Post, 'id'>) {
+function Post({ content, user, system, rotation = 0, timestamp }: Omit<Post, 'id'>) {
   return (
     <div style={{ transform: `rotate(${rotation}deg)` }}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
         {system && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
         )}
-        <div className="mb-4 border-b border-dashed border-[#FFD580] pb-2 flex justify-between items-center">
-          <div className="flex items-center text-xs text-gray-600">
+        <div className="mb-4 flex items-center justify-between border-b border-dashed border-[#FFD580] pb-2">
+          <div className="text-xs text-gray-600">
             {user}
           </div>
           <div className="text-xs text-gray-600">
@@ -151,16 +145,9 @@ export default function Home() {
   const [newPost, setNewPost] = useState('')
   const [isPreview, setIsPreview] = useState(false)
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
-  
-  const rotationRef = useRef<number>(createRotation())
+  const rotationRef = useRef(Math.random() * 4 - 2)
 
-  const tags = [
-    'timeline',
-    'discussion',
-    'docs',
-    'neurotech',
-    'sources'
-  ]
+  const tags = Object.keys(channelIcons)
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -195,11 +182,9 @@ export default function Home() {
   }, [activeTag])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      if (e.shiftKey) {
-        createPost()
-        e.preventDefault()
-      }
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault()
+      createPost()
     }
   }
 
@@ -223,14 +208,9 @@ export default function Home() {
       if (!res.ok) throw new Error('Failed to create post')
       
       const data = await res.json()
-      
-      setPosts(prev => [{
-        ...data,
-        rotation: post.rotation
-      }, ...prev])
-      
+      setPosts(prev => [{ ...data, rotation: post.rotation }, ...prev])
       setNewPost('')
-      rotationRef.current = createRotation()
+      rotationRef.current = Math.random() * 4 - 2
     } catch (err) {
       console.error('Error creating post:', err)
     }
@@ -242,16 +222,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
-      {/* Navigation */}
-      <div className="sticky top-0 z-50 mx-auto mb-8 max-w-2xl px-4 pt-4">
-        <div className="flex justify-center rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
+      <div className="sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4">
+        <div className="flex items-center justify-center space-x-4 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
           {tags.map((tag) => {
-            const Icon = tagIcons[tag as keyof typeof tagIcons]
+            const Icon = channelIcons[tag]
             return (
               <button
                 key={tag}
                 onClick={() => setActiveTag(tag)}
-                className={`relative mx-2 flex items-center rounded-lg p-2 transition-all hover:scale-110 ${
+                className={`relative flex items-center rounded-lg p-2 transition-all hover:scale-110 ${
                   activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'text-gray-600 hover:bg-[#FFEBC1]'
                 }`}
               >
@@ -265,10 +244,10 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="mx-auto max-w-2xl p-4">
+      <div className="mx-auto max-w-2xl px-4">
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post {...pinnedPost} />
+            <Post {...pinnedPost} rotation={Math.random() * 4 - 2} />
           )}
 
           {posts
@@ -283,16 +262,16 @@ export default function Home() {
             <div className="mb-2 flex gap-2">
               <button 
                 onClick={() => setIsPreview(false)}
-                className={`flex items-center text-sm ${!isPreview ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`flex items-center gap-1 text-sm ${!isPreview ? 'text-gray-900' : 'text-gray-500'}`}
               >
-                <Pencil size={16} className="mr-1" />
+                <Pencil size={14} />
                 edit
               </button>
               <button
                 onClick={() => setIsPreview(true)}
-                className={`flex items-center text-sm ${isPreview ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`flex items-center gap-1 text-sm ${isPreview ? 'text-gray-900' : 'text-gray-500'}`}
               >
-                <Eye size={16} className="mr-1" />
+                <Eye size={14} />
                 preview
               </button>
             </div>
