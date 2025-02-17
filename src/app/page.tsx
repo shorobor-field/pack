@@ -136,7 +136,7 @@ export default function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
-      const data = await res.json()
+      const data = await res.json() as Post[]
       setPosts(data)
       
       // check for unreads
