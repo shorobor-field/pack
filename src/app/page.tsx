@@ -450,7 +450,6 @@ export default function Home() {
     </div>
   )
 }
-}
 
 function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme }: Omit<Post, 'id'> & { 
   theme: typeof themes[keyof typeof themes] 
