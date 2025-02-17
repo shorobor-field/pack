@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
-import { formatDistanceToNow, format, isAfter, sub } from 'date-fns'
+import { differenceInMinutes, differenceInHours, differenceInDays, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
 
 type User = {
@@ -17,7 +17,33 @@ type Post = {
   system?: boolean
 }
 
-const createRotation = () => (Math.random() * 4 - 2)
+// moved out so it's not recreated on every render
+const getRotation = (id: string) => {
+  // use id to generate consistent rotation between -2 and 2
+  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return (hash % 40) / 10 - 2
+}
+
+const formatTimeAgo = (timestamp: string) => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  
+  const minutesAgo = differenceInMinutes(now, date)
+  const hoursAgo = differenceInHours(now, date)
+  const daysAgo = differenceInDays(now, date)
+  
+  if (daysAgo >= 7) {
+    return format(date, 'dd-MM-yyyy')
+  } else if (daysAgo > 0) {
+    return `${daysAgo}d ago`
+  } else if (hoursAgo > 0) {
+    return `${hoursAgo}h ago`
+  } else if (minutesAgo > 0) {
+    return `${minutesAgo}m ago`
+  } else {
+    return 'just now'
+  }
+}
 
 const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
   timeline: {
@@ -25,7 +51,6 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["timeline"],
     system: true,
-    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   discussion: {
@@ -33,7 +58,6 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["discussion"],
     system: true,
-    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   docs: {
@@ -41,7 +65,6 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["docs"],
     system: true,
-    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   neurotech: {
@@ -49,7 +72,6 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["neurotech"],
     system: true,
-    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   sources: {
@@ -57,7 +79,6 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["sources"],
     system: true,
-    rotation: createRotation(),
     timestamp: new Date().toISOString()
   }
 }
@@ -90,12 +111,9 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ content, user, system, rotation, timestamp }: Omit<Post, 'id'>) {
-  const date = new Date(timestamp)
-  const isOld = isAfter(date, sub(new Date(), { months: 1 }))
-  const displayDate = isOld 
-    ? format(date, 'dd-MM-yyyy')
-    : formatDistanceToNow(date, { addSuffix: true })
+function Post({ id, content, user, system, timestamp }: Post) {
+  const rotation = system ? 0 : getRotation(id)
+  const timeAgo = formatTimeAgo(timestamp)
 
   return (
     <div style={{ transform: `rotate(${rotation}deg)` }}>
@@ -108,11 +126,20 @@ function Post({ content, user, system, rotation, timestamp }: Omit<Post, 'id'>) 
             {user}
           </div>
           <div className="text-xs text-gray-600">
-            {displayDate}
+            {timeAgo}
           </div>
         </div>
-        <div className="font-mono text-gray-800">
-          <ReactMarkdown>{content}</ReactMarkdown>
+        <div className="font-mono text-gray-800 prose prose-sm max-w-none">
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+              h1: ({ children }) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-lg font-bold mb-3">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-base font-bold mb-2">{children}</h3>,
+            }}
+          >
+            {content}
+          </ReactMarkdown>
         </div>
       </div>
     </div>
@@ -168,11 +195,9 @@ export default function Home() {
   }, [activeTag])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      if (e.shiftKey) {
-        createPost()
-        e.preventDefault()
-      }
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault()
+      createPost()
     }
   }
 
@@ -183,7 +208,7 @@ export default function Home() {
       content: newPost,
       user: user.name,
       tags: [activeTag],
-      rotation: createRotation()
+      timestamp: new Date().toISOString()
     }
 
     try {
@@ -196,13 +221,7 @@ export default function Home() {
       if (!res.ok) throw new Error('Failed to create post')
       
       const data = await res.json()
-      console.log('Post created:', data) // debug log
-      
-      setPosts(prev => [{
-        ...data,
-        rotation: post.rotation
-      }, ...prev])
-      
+      setPosts(prev => [data, ...prev])
       setNewPost('')
     } catch (err) {
       console.error('Error creating post:', err)
@@ -212,6 +231,7 @@ export default function Home() {
   if (!user) return <NameSelector onSelect={setUser} />
 
   const pinnedPost = pinnedPosts[activeTag]
+  const pinnedPostWithId = pinnedPost ? { ...pinnedPost, id: `pinned-${activeTag}` } : null
 
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
@@ -257,14 +277,14 @@ export default function Home() {
       
       <div className="max-w-2xl mx-auto p-8 pt-16 md:pt-8 relative">
         <div className="grid gap-6">
-          {pinnedPost && (
-            <Post {...pinnedPost} />
+          {pinnedPostWithId && (
+            <Post {...pinnedPostWithId} />
           )}
 
           {posts
             .filter(post => post.tags.includes(activeTag))
             .map(post => (
-              <Post key={post.id} {...post} rotation={post.rotation || createRotation()} />
+              <Post key={post.id} {...post} />
             ))}
         </div>
 
@@ -285,8 +305,17 @@ export default function Home() {
               </button>
             </div>
             {isPreview ? (
-              <div className="min-h-[5rem] font-mono text-gray-800">
-                <ReactMarkdown>{newPost}</ReactMarkdown>
+              <div className="min-h-[5rem] font-mono text-gray-800 prose prose-sm max-w-none">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+                    h1: ({ children }) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-lg font-bold mb-3">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-base font-bold mb-2">{children}</h3>,
+                  }}
+                >
+                  {newPost}
+                </ReactMarkdown>
               </div>
             ) : (
               <textarea
