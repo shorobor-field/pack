@@ -89,6 +89,17 @@ const themes = {
   }
 } as const
 
+const getThemeColors = (themeName: string) => {
+  switch (themeName) {
+    case 'playful-light':
+      return { dark: [255, 213, 128], light: [255, 255, 255] }  // #FFD580
+    case 'playful-dark':
+      return { dark: [0, 0, 0], light: [203, 166, 247] }  // #cba6f7
+    default:
+      return { dark: [0, 0, 0], light: [255, 255, 255] }
+  }
+}
+
 const channelIcons: Record<string, React.ElementType> = {
   timeline: Layout,
   discussion: MessageSquare,
@@ -135,7 +146,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
   }
 }
 
-function processImage(img: HTMLImageElement): Promise<string> {
+function processImage(img: HTMLImageElement, themeName: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')!
@@ -167,6 +178,8 @@ function processImage(img: HTMLImageElement): Promise<string> {
       )
       imageData.data[i] = imageData.data[i + 1] = imageData.data[i + 2] = gray
     }
+
+    const { dark, light } = getThemeColors(themeName)
     
     // dithering
     for (let y = 0; y < height; y++) {
@@ -174,9 +187,14 @@ function processImage(img: HTMLImageElement): Promise<string> {
         const idx = (y * width + x) * 4
         const oldPixel = imageData.data[idx]
         const newPixel = oldPixel < 128 ? 0 : 255
-        const error = oldPixel - newPixel
         
-        imageData.data[idx] = imageData.data[idx + 1] = imageData.data[idx + 2] = newPixel
+        // set rgb values based on theme
+        const targetColor = newPixel === 0 ? dark : light
+        imageData.data[idx] = targetColor[0]
+        imageData.data[idx + 1] = targetColor[1]
+        imageData.data[idx + 2] = targetColor[2]
+
+        const error = oldPixel - newPixel
 
         if (x + 1 < width) {
           imageData.data[idx + 4] += error * 7/16
@@ -334,7 +352,7 @@ function NewPostEditor({ onSubmit, theme }: {
       reader.onload = async (event) => {
         const img = document.createElement('img')
         img.onload = async () => {
-          const processed = await processImage(img)
+          const processed = await processImage(img, currentTheme)
           setImage(processed)
           setUploading(false)
         }
