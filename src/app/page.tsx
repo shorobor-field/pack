@@ -258,6 +258,7 @@ function NewPostEditor({ onSubmit, theme }: {
             rows={3}
           />
         </div>
+    
       </div>
       <div className="mt-2 flex justify-end">
         <button 
@@ -406,76 +407,8 @@ export default function Home() {
   return (
     <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
       <div className="mx-auto max-w-2xl px-4 py-4">
-<div className="mb-6 flex items-center justify-between">
-          <div 
-            className={`flex-grow ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`}
-            style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}
-          >
-            <div 
-              className={`flex items-center justify-between p-3 cursor-pointer ${theme.border} border-b border-dashed`}
-              onClick={() => setIsNavExpanded(!isNavExpanded)}
-            >
-              <div className="flex items-center space-x-2">
-                {React.createElement(channelIcons[activeTag], { size: 14, className: 'mr-2' })}
-                <span className={theme.text}>{activeTag}</span>
-              </div>
-              <ChevronDown 
-                size={14}
-                className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`}
-              />
-            </div>
-            
-            <div className="divide-y divide-dashed">
-              {tags.map(tag => (
-                <div
-                  key={tag}
-                  className={`p-3 cursor-pointer ${tag === activeTag ? `${theme.accent} ${theme.text}` : theme.textMuted}`}
-                  onClick={() => handleTagChange(tag)}
-                >
-                  <div className="flex items-center space-x-2">
-                    {React.createElement(channelIcons[tag], { size: 14 })}
-                    <span>{tag}</span>
-                    {unreadTags.has(tag) && (
-                      <div className="h-2 w-2 rounded-full bg-red-500" />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2 ml-4">
-            <button 
-              onClick={cycleTheme}
-              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-            >
-              <Palette size={20} />
-            </button>
-            <button 
-              onClick={scrollToBottom}
-              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-            >
-              <ChevronDown size={20} />
-            </button>
-          </div>
-        </div>
-                  
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={cycleTheme}
-              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-            >
-              <Palette size={20} />
-            </button>
-            <button 
-              onClick={scrollToBottom}
-              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-            >
-              <ChevronDown size={20} />
-            </button>
-          </div>
-        </div>
-
+        <div className="mb-6 flex items-center justify-between"><div className={`flex-grow ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`} style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}><div className={`flex items-center justify-between p-3 cursor-pointer ${theme.border} border-b border-dashed`} onClick={() => setIsNavExpanded(!isNavExpanded)}><div className="flex items-center space-x-2">{React.createElement(channelIcons[activeTag], { size: 14, className: 'mr-2' })}<span className={theme.text}>{activeTag}</span></div><ChevronDown size={14} className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`} /></div><div className="divide-y divide-dashed">{tags.map(tag => (<div key={tag} className={`p-3 cursor-pointer ${tag === activeTag ? `${theme.accent} ${theme.text}` : theme.textMuted}`} onClick={() => handleTagChange(tag)}><div className="flex items-center space-x-2">{React.createElement(channelIcons[tag], { size: 14 })}<span>{tag}</span>{unreadTags.has(tag) && (<div className="h-2 w-2 rounded-full bg-red-500" />)}</div></div>))}</div></div><div className="flex items-center space-x-2 ml-4"><button onClick={cycleTheme} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}><Palette size={20} /></button><button onClick={scrollToBottom} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}><ChevronDown size={20} /></button></div></div>
+        
         <div className="grid gap-6">
           {pinnedPost && (
             <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} />
