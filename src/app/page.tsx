@@ -1,10 +1,9 @@
 "use client"
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Upload, Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
-import Image from 'next/image'
 
 //hidebar
 import './globals.css' // Add this to import custom CSS
@@ -22,7 +21,6 @@ type Post = {
   rotation?: number
   system?: boolean
   readers?: string[]
-  image?: string
 }
 
 const themes = {
@@ -199,10 +197,10 @@ function NameSelector({ onSelect, theme }: {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme, image }: Omit<Post, 'id'> & { 
+function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme }: Omit<Post, 'id'> & { 
   theme: typeof themes[keyof typeof themes] 
 }) {
-  const formattedContent = content.replace(/(?!\n\n)\n(?!\n)/g, '  \n')
+  const formattedContent = content
   const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
   
   return (
@@ -211,17 +209,6 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], th
         ${theme.cardShadow} ${theme.rounded} p-6 transition-colors duration-200`}>
         {system && theme.rotate && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
-        )}
-        {image && (
-          <div className="mb-4 w-full">
-            <Image
-              src={image} 
-              alt="Post image"
-              width={800} 
-              height={600} 
-              className="w-full h-auto object-cover rounded-lg mb-4" 
-            />
-          </div>
         )}
         <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
           <div className={`text-xs ${theme.textMuted}`}>
@@ -234,7 +221,7 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], th
           )}
         </div>
         <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{formattedContent}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ ul: (props) => <ul className="list-disc pl-5" {...props} />, ol: (props) => <ol className="list-decimal pl-5" {...props} /> }}>{formattedContent}</ReactMarkdown>
         </div>
         {readers.length > 0 && (
           <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
@@ -247,162 +234,10 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], th
 }
 
 function NewPostEditor({ onSubmit, theme }: { 
-  onSubmit: (content: string, image?: string) => void
+  onSubmit: (content: string) => void
   theme: typeof themes[keyof typeof themes]
 }) {
   const [content, setContent] = useState('')
-  const [image, setImage] = useState<string | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  const processImage = (img: HTMLImageElement): string => {
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext('2d')!;
-    
-    // Enhanced max dimensions with higher resolution
-    const maxWidth = 800;
-    const maxHeight = 800;
-    let width = img.width;
-    let height = img.height;
-    
-    // Advanced aspect ratio scaling
-    const scaleFactor = Math.min(maxWidth / width, maxHeight / height);
-    width = Math.round(width * scaleFactor);
-    height = Math.round(height * scaleFactor);
-    
-    canvas.width = width;
-    canvas.height = height;
-    
-    // Ultra-high quality rendering
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.globalCompositeOperation = 'source-over';
-    
-    // Draw image with high-precision scaling
-    ctx.drawImage(img, 0, 0, width, height);
-    
-    // Advanced multi-pass unsharp masking
-    const passes = 3;
-    const baseAmount = 1.2;
-    const imageData = ctx.getImageData(0, 0, width, height);
-    
-    for (let pass = 0; pass < passes; pass++) {
-      const blur = ctx.createImageData(width, height);
-      const sharp = imageData;
-      const amount = baseAmount * Math.pow(1.5, pass);
-      
-      // Advanced gaussian blur with weighted kernel
-      for (let y = 1; y < height - 1; y++) {
-        for (let x = 1; x < width - 1; x++) {
-          const idx = (y * width + x) * 4;
-          const kernel = [
-            [1, 2, 1],
-            [2, 4, 2],
-            [1, 2, 1]
-          ];
-          
-          for (let c = 0; c < 3; c++) {
-            blur.data[idx + c] = (
-              sharp.data[idx - width*4 - 4 + c] * kernel[0][0] + 
-              sharp.data[idx - width*4 + c] * kernel[0][1] + 
-              sharp.data[idx - width*4 + 4 + c] * kernel[0][2] +
-              sharp.data[idx - 4 + c] * kernel[1][0] + 
-              sharp.data[idx + c] * kernel[1][1] + 
-              sharp.data[idx + 4 + c] * kernel[1][2] +
-              sharp.data[idx + width*4 - 4 + c] * kernel[2][0] + 
-              sharp.data[idx + width*4 + c] * kernel[2][1] + 
-              sharp.data[idx + width*4 + 4 + c] * kernel[2][2]
-            ) / 16;
-          }
-        }
-      }
-      
-      // Enhanced unsharp masking with adaptive thresholding
-      for (let i = 0; i < imageData.data.length; i += 4) {
-        for (let c = 0; c < 3; c++) {
-          const diff = sharp.data[i + c] - blur.data[i + c];
-          // Adaptive sharpening with threshold
-          const threshold = 10;
-          const adaptiveAmount = Math.abs(diff) > threshold ? amount : amount * 0.3;
-          imageData.data[i + c] = sharp.data[i + c] + diff * adaptiveAmount;
-        }
-      }
-    }
-    
-    // Advanced text-optimized grayscale conversion
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const r = imageData.data[i];
-      const g = imageData.data[i + 1];
-      const b = imageData.data[i + 2];
-      
-      // Perceptual luminance with text optimization
-      const gray = Math.round(
-        r * 0.299 + 
-        g * 0.587 + 
-        b * 0.114
-      );
-      
-      // Enhanced thresholding with soft edges
-      let processedGray = gray;
-      if (processedGray > 230) processedGray = 255;
-      if (processedGray < 25) processedGray = 0;
-      
-      imageData.data[i] = imageData.data[i + 1] = imageData.data[i + 2] = processedGray;
-    }
-    
-    // Floyd-Steinberg dithering with error diffusion
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4;
-        const oldPixel = imageData.data[idx];
-        const newPixel = oldPixel < 128 ? 0 : 255;
-        const error = oldPixel - newPixel;
-        
-        imageData.data[idx] = imageData.data[idx + 1] = imageData.data[idx + 2] = newPixel;
-        
-        // Sophisticated error distribution with boundary checks
-        const errorDistribution = [
-          { dx: 1, dy: 0, factor: 7/16 },
-          { dx: -1, dy: 1, factor: 3/16 },
-          { dx: 0, dy: 1, factor: 5/16 },
-          { dx: 1, dy: 1, factor: 1/16 }
-        ];
-        
-        errorDistribution.forEach(({dx, dy, factor}) => {
-          const newX = x + dx;
-          const newY = y + dy;
-          
-          if (newX >= 0 && newX < width && newY < height) {
-            const newIdx = (newY * width + newX) * 4;
-            for (let c = 0; c < 3; c++) {
-              imageData.data[newIdx + c] = Math.min(255, Math.max(0, 
-                imageData.data[newIdx + c] + error * factor
-              ));
-            }
-          }
-        });
-      }
-    }
-    
-    ctx.putImageData(imageData, 0, 0);
-    
-    // Ultra-high compression with quality preservation
-    return canvas.toDataURL('image/webp', 0.85);
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event: ProgressEvent<FileReader>) => {
-      const img = new Image();
-      img.src = (event.target?.result as string) || '';
-      img.onload = () => {
-        setImage(processImage(img));
-      };
-    };
-    reader.readAsDataURL(file);
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -413,38 +248,15 @@ function NewPostEditor({ onSubmit, theme }: {
 
   const handleSubmit = () => {
     if (!content.trim()) return
-    onSubmit(content, image || undefined)
+    onSubmit(content)
     setContent('')
-    setImage(null)
-  }
-
-  const removeImage = () => {
-    setImage(null)
   }
 
   return (
     <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} 
       p-4 transition-colors duration-200`}>
-      <canvas ref={canvasRef} className="hidden" />
-      
-      {image && (
-        <div className="relative mb-4">
-          <img 
-            src={image} 
-            alt="Uploaded" 
-            className="w-full h-auto object-cover rounded-lg" 
-          />
-          <button 
-            onClick={removeImage}
-            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-          >
-            ×
-          </button>
-        </div>
-      )}
-      
       <div className={`prose prose-sm w-full font-mono ${theme.text}`}>
-        <div className="min-h-[5rem] flex items-center">
+        <div className="min-h-[5rem]">
           <textarea
             value={content}
             onChange={e => setContent(e.target.value)}
@@ -455,17 +267,9 @@ function NewPostEditor({ onSubmit, theme }: {
             rows={3}
           />
         </div>
+    
       </div>
-      <div className="mt-2 flex justify-between items-center">
-        <label className={`${theme.rounded} p-2 ${theme.text} transition-all hover:scale-110 cursor-pointer`}>
-          <Upload size={16} />
-          <input 
-            type="file" 
-            accept="image/*" 
-            className="hidden" 
-            onChange={handleImageUpload} 
-          />
-        </label>
+      <div className="mt-2 flex justify-end">
         <button 
           onClick={handleSubmit}
           className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
@@ -572,15 +376,14 @@ export default function Home() {
   }, [currentTheme])
 
 
-  const createPost = async (content: string, image?: string) => {
+  const createPost = async (content: string) => {
     if (!user) return
 
     const post = {
       content,
       user: user.name,
       tags: [activeTag],
-      timestamp: new Date().toISOString(),
-      image  // Optional image field
+      timestamp: new Date().toISOString()
     }
 
     try {
@@ -601,6 +404,8 @@ export default function Home() {
           [data.id]: (Math.random() - 0.5) * 2
         }))
       }
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
     } catch (err) {
       console.error('Error creating post:', err)
     }
@@ -646,5 +451,3 @@ export default function Home() {
     </div>
   )
 }
-
-// Vercel deployment
