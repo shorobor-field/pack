@@ -396,10 +396,10 @@ function NewPostEditor({ onSubmit, theme }: {
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
+      img.src = event.target.result as string;
       img.onload = () => {
         setImage(processImage(img));
       };
-      img.src = event.target.result as string;
     };
     reader.readAsDataURL(file);
   };
