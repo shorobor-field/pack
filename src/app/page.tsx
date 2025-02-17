@@ -641,7 +641,7 @@ export default function Home() {
         
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} />
+            <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} currentTheme={currentTheme} />
           )}
 
           {filteredPosts
