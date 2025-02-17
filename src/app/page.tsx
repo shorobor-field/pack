@@ -166,16 +166,17 @@ function NameSelector({ onSelect, theme }: {
   ]
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg}`}>
-      <div className={`w-80 ${theme.rounded} ${theme.nav} p-8 ${theme.cardShadow}`}>
+    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg} transition-colors duration-200`}>
+      <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
         <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className={`group flex items-center justify-center space-x-2 ${theme.rounded} border-2 
-                ${theme.border} ${theme.card} p-3 ${theme.text} transition-all ${theme.accentHover}`}
+              className={`group flex items-center justify-center space-x-2 ${theme.rounded} 
+                border-2 ${theme.border} ${theme.card} p-3 ${theme.text} 
+                transition-all ${theme.accentHover}`}
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -289,7 +290,13 @@ export default function Home() {
   const [activeTag, setActiveTag] = useState('timeline')
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
   const [rotations, setRotations] = useState<Record<string, number>>({})
-  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>('playful-light')
+  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pack-theme')
+      return (saved as keyof typeof themes) || 'playful-light'
+    }
+    return 'playful-light'
+  })
 
   const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
@@ -361,6 +368,10 @@ export default function Home() {
       return next
     })
   }, [activeTag])
+
+  useEffect(() => {
+    localStorage.setItem('pack-theme', currentTheme)
+  }, [currentTheme])
 
   const createPost = async (content: string) => {
     if (!user) return
