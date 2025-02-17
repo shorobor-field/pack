@@ -17,13 +17,15 @@ type Post = {
   system?: boolean
 }
 
+const createRotation = () => (Math.random() * 4 - 2)
+
 const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
   timeline: {
     content: "everything goes here. this is the main feed.",
     user: "system",
     tags: ["timeline"],
     system: true,
-    rotation: (Math.random() * 4 - 2),
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   discussion: {
@@ -31,7 +33,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["discussion"],
     system: true,
-    rotation: (Math.random() * 4 - 2),
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   docs: {
@@ -39,7 +41,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["docs"],
     system: true,
-    rotation: (Math.random() * 4 - 2),
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   neurotech: {
@@ -47,7 +49,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["neurotech"],
     system: true,
-    rotation: (Math.random() * 4 - 2),
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   sources: {
@@ -55,7 +57,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["sources"],
     system: true,
-    rotation: (Math.random() * 4 - 2),
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   }
 }
@@ -137,14 +139,12 @@ export default function Home() {
     const fetchPosts = async () => {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       const data = await res.json() as Post[]
-      // add empty tags array to each post since we're not using tags rn
-      const postsWithTags = data.map(post => ({ ...post, tags: [] }))
-      setPosts(postsWithTags)
+      setPosts(data)
       
-      // check for unreads based on timestamp only for now
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
       if (lastRead) {
         const hasUnread = data.some(post => 
+          post.tags.includes(activeTag) && 
           new Date(post.timestamp) > new Date(lastRead)
         )
         if (hasUnread) {
@@ -183,7 +183,7 @@ export default function Home() {
       content: newPost,
       user: user.name,
       tags: [activeTag],
-      rotation: (Math.random() * 4 - 2),
+      rotation: createRotation(),
       timestamp: new Date().toISOString()
     }
 
@@ -194,10 +194,8 @@ export default function Home() {
     })
 
     if (res.ok) {
-      setPosts(prev => [{
-        ...post,
-        id: crypto.randomUUID()
-      }, ...prev])
+      const newPost = await res.json()
+      setPosts(prev => [newPost, ...prev])
       setNewPost('')
     }
   }
@@ -255,9 +253,9 @@ export default function Home() {
           )}
 
           {posts
-            .filter(post => !post.system) // for now just show all non-system posts
+            .filter(post => post.tags.includes(activeTag))
             .map(post => (
-              <Post key={post.id} {...post} />
+              <Post key={post.id} {...post} rotation={post.rotation || createRotation()} />
             ))}
         </div>
 
