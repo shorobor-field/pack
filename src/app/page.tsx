@@ -403,7 +403,13 @@ function NewPostEditor({ onSubmit, theme, themeName }: {
     <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
       {image && (
         <div className="mb-4">
-          <Image src={image} alt="" width={800} height={600} className="w-full mb-2" />>
+          <Image 
+            src={image} 
+            alt="" 
+            width={800}
+            height={600}
+            className="w-full mb-2" 
+          />
           <button 
             onClick={() => setImage(null)}
             className={`text-xs ${theme.textMuted} hover:${theme.text}`}
