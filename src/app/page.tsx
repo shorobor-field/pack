@@ -1,10 +1,12 @@
 "use client"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Hash, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link, Palette, Hash, ChevronUp, ChevronDown, Send } from 'lucide-react'
 
-type User = { name: string }
+type User = {
+  name: string
+}
 
 type Post = {
   id: string
@@ -19,66 +21,80 @@ type Post = {
 
 const themes = {
   'playful-light': {
-    bg: 'bg-amber-50',
-    nav: 'bg-white',
-    cardShadow: 'shadow-lg',
+    bg: 'bg-[#FFE5B4]',
+    nav: 'bg-[#FFF4E0]',
+    navShadow: 'shadow-lg shadow-[#FFE5B4]/60',
     card: 'bg-white',
-    accent: 'bg-black text-white',
-    accentHover: 'hover:bg-gray-100',
-    border: 'border-gray-200',
+    systemCard: 'bg-[#FFFACD]',
+    cardShadow: 'shadow-lg',
+    accent: 'bg-[#FFD580]',
+    accentHover: 'hover:bg-[#FFEBC1]',
+    border: 'border-[#FFD580]',
     text: 'text-gray-800',
-    textMuted: 'text-gray-500',
-    rounded: 'rounded',
+    textMuted: 'text-gray-600',
+    rounded: 'rounded-lg',
+    textArea: 'bg-transparent',
     rotate: true
   },
   'playful-dark': {
-    bg: 'bg-gray-900',
-    nav: 'bg-gray-800',
+    bg: 'bg-[#1e1e2e]',
+    nav: 'bg-[#181825]',
+    navShadow: 'shadow-lg shadow-black/40',
+    card: 'bg-[#181825]',
+    systemCard: 'bg-[#11111b]',
     cardShadow: 'shadow-lg shadow-black/20',
-    card: 'bg-gray-800',
-    accent: 'bg-white text-black',
-    accentHover: 'hover:bg-gray-700',
-    border: 'border-gray-700',
-    text: 'text-gray-100',
-    textMuted: 'text-gray-400',
-    rounded: 'rounded',
+    accent: 'bg-[#cba6f7]',
+    accentHover: 'hover:bg-[#f5c2e7]',
+    border: 'border-[#313244]',
+    text: 'text-[#cdd6f4]',
+    textMuted: 'text-[#9399b2]',
+    rounded: 'rounded-lg',
+    textArea: 'bg-transparent',
     rotate: true
   },
   'corpo-light': {
-    bg: 'bg-white',
-    nav: 'bg-gray-50',
+    bg: 'bg-gray-50',
+    nav: 'bg-white',
+    navShadow: 'shadow-lg shadow-gray-200/60',
+    card: 'bg-white',
+    systemCard: 'bg-white',
     cardShadow: 'shadow-sm',
-    card: 'bg-gray-50',
-    accent: 'bg-black text-white',
+    accent: 'bg-gray-100',
     accentHover: 'hover:bg-gray-100',
     border: 'border-gray-200',
     text: 'text-gray-800',
-    textMuted: 'text-gray-500',
+    textMuted: 'text-gray-600',
     rounded: '',
+    textArea: 'bg-transparent',
     rotate: false
   },
   'corpo-dark': {
-    bg: 'bg-gray-950',
-    nav: 'bg-gray-900',
-    cardShadow: 'shadow-sm',
-    card: 'bg-gray-900',
-    accent: 'bg-white text-black',
-    accentHover: 'hover:bg-gray-800',
-    border: 'border-gray-800',
-    text: 'text-gray-100',
+    bg: 'bg-[#1F1F1F]',
+    nav: 'bg-[#2A2A2A]',
+    navShadow: 'shadow-lg shadow-black/40',
+    card: 'bg-[#2A2A2A]',
+    systemCard: 'bg-[#333333]',
+    cardShadow: 'shadow-lg shadow-black/20',
+    accent: 'bg-[#3A3A3A]',
+    accentHover: 'hover:bg-[#444444]',
+    border: 'border-[#404040]',
+    text: 'text-gray-200',
     textMuted: 'text-gray-400',
     rounded: '',
+    textArea: 'bg-transparent',
     rotate: false
   }
 } as const
 
 const channelIcons: Record<string, React.ElementType> = {
-  timeline: Hash,
+  timeline: Layout,
   discussion: MessageSquare,
   docs: FileText,
   neurotech: Brain,
-  sources: LinkIcon
+  sources: Link
 }
+
+// two
 
 const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
   timeline: {
@@ -130,21 +146,15 @@ function formatPostDate(timestamp: string) {
   
   if (isAfter(date, sub(now, { days: 1 }))) {
     const hours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    return `${hours}h ago`
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
   }
   
   if (isAfter(date, sub(now, { days: 7 }))) {
     const days = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-    return `${days}d ago`
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`
   }
   
   return format(date, 'dd-MM-yyyy')
-}
-
-const urlRegex = /(https?:\/\/[^\s]+)/g
-
-function linkifyText(text: string): string {
-  return text.replace(urlRegex, url => `[${url}](${url})`)
 }
 
 function NameSelector({ onSelect, theme }: { 
@@ -160,15 +170,16 @@ function NameSelector({ onSelect, theme }: {
 
   return (
     <div className={`fixed inset-0 flex items-center justify-center ${theme.bg}`}>
-      <div className={`w-80 ${theme.nav} p-8 ${theme.cardShadow} ${theme.rounded}`}>
+      <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
         <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className={`group flex items-center justify-center space-x-2 border-2 
-                ${theme.border} ${theme.card} p-3 ${theme.text} transition-all ${theme.accentHover}`}
+              className={`group flex items-center justify-center space-x-2 ${theme.rounded} 
+                border-2 ${theme.border} ${theme.card} p-3 ${theme.text} 
+                transition-all ${theme.accentHover}`}
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -179,39 +190,45 @@ function NameSelector({ onSelect, theme }: {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, readers = [], currentUser, theme }: 
-  Omit<Post, 'id' | 'tags'> & { 
-    currentUser: string
-    theme: typeof themes[keyof typeof themes]
-  }) {
-  const [isHovered, setIsHovered] = useState(false)
+// three
+
+function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme }: Omit<Post, 'id'> & { 
+  theme: typeof themes[keyof typeof themes] 
+}) {
+  const [showReaders, setShowReaders] = useState(false)
+  const linkRegex = /(https?:\/\/[^\s]+)/g
+  const formattedContent = content
+    .replace(/\n/g, '  \n')
+    .replace(linkRegex, '[$1]($1)')
+  
   const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
   
   return (
     <div style={style}>
-      <div 
-        className={`relative ${theme.card} p-6 ${theme.cardShadow} transition-all hover:shadow-xl ${theme.rounded}`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
+        ${theme.cardShadow} ${theme.rounded} p-6 transition-colors duration-200`}
+        onMouseEnter={() => setShowReaders(true)}
+        onMouseLeave={() => setShowReaders(false)}
       >
         {system && theme.rotate && (
-          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 
-            transform rounded-full bg-red-500" />
+          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
         )}
         <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
-          <div className={theme.textMuted}>{user}</div>
+          <div className={`text-xs ${theme.textMuted}`}>
+            {user}
+          </div>
           {!system && (
-            <div className={theme.textMuted}>
+            <div className={`text-xs ${theme.textMuted}`}>
               {formatPostDate(timestamp)}
             </div>
           )}
         </div>
-        <div className={`prose prose-sm max-w-none whitespace-pre-wrap font-mono ${theme.text}`}>
-          <ReactMarkdown>{linkifyText(content)}</ReactMarkdown>
+        <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
+          <ReactMarkdown>{formattedContent}</ReactMarkdown>
         </div>
-        {isHovered && readers.length > 0 && (
-          <div className={`mt-2 text-xs ${theme.textMuted}`}>
-            read by: {readers.filter(r => r !== currentUser).join(' ')}
+        {showReaders && readers.length > 0 && (
+          <div className={`mt-2 font-mono text-xs ${theme.textMuted}`}>
+            read by: {readers.join(' ')}
           </div>
         )}
       </div>
@@ -224,6 +241,7 @@ function NewPostEditor({ onSubmit, theme }: {
   theme: typeof themes[keyof typeof themes]
 }) {
   const [content, setContent] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -238,258 +256,28 @@ function NewPostEditor({ onSubmit, theme }: {
     setContent('')
   }
 
-  return (
-    <div className={`${theme.card} p-4 ${theme.cardShadow} ${theme.rounded}`}>
-      <div className={`mb-2 prose prose-sm max-w-none font-mono ${theme.text}`}>
-        <ReactMarkdown>{linkifyText(content)}</ReactMarkdown>
-      </div>
-      <div className="flex items-end gap-2">
-        <textarea
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="what's on your mind..."
-          className={`w-full resize-none bg-transparent font-mono ${theme.text}
-            placeholder:${theme.textMuted} focus:outline-none`}
-          rows={3}
-        />
-        <button 
-          onClick={handleSubmit}
-          className={`shrink-0 p-2 ${theme.accent} transition-all hover:scale-105`}
-        >
-          <Send size={16} />
-        </button>
-      </div>
-    </div>
-  )
-  
-}
-
-export default function Home() {
-  const [user, setUser] = useState<User | null>(null)
-  const [posts, setPosts] = useState<Post[]>([])
-  const [activeTag, setActiveTag] = useState('timeline')
-  const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
-  const [rotations, setRotations] = useState<Record<string, number>>({})
-  const [isNavExpanded, setIsNavExpanded] = useState(false)
-  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>('playful-light')
-
-  const theme = themes[currentTheme]
-  const tags = Object.keys(channelIcons)
-
-  const generateRotations = (postIds: string[]) => {
-    const newRotations: Record<string, number> = {}
-    postIds.forEach(id => {
-      const rotation = theme.rotate ? (Math.random() - 0.5) * 2 : 0
-      newRotations[id] = rotation
-    })
-    setRotations(newRotations)
-  }
-
-  const handleTagChange = (tag: string) => {
-    setActiveTag(tag)
-    setIsNavExpanded(false)
-    const filteredPosts = posts.filter(p => p.tags.includes(tag))
-    generateRotations(['pinned', ...filteredPosts.map(p => p.id)])
-    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
-  }
-
-  const cycleTheme = () => {
-    setCurrentTheme(current => {
-      const themeOrder: (keyof typeof themes)[] = ['playful-light', 'playful-dark', 'corpo-light', 'corpo-dark']
-      const currentIndex = themeOrder.indexOf(current)
-      return themeOrder[(currentIndex + 1) % themeOrder.length]
-    })
-  }
-
   useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
-      const data = await res.json() as Post[]
-      setPosts(data)
-      
-      const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
-      if (lastRead) {
-        const hasUnread = data.some(post => 
-          post.tags.includes(activeTag) && 
-          new Date(post.timestamp) > new Date(lastRead)
-        )
-        if (hasUnread) {
-          setUnreadTags(prev => new Set([...prev, activeTag]))
-        }
-      }
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
     }
-
-    fetchPosts()
-    const interval = setInterval(fetchPosts, 30000)
-    return () => clearInterval(interval)
-  }, [activeTag])
-
-  useEffect(() => {
-    localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
-    setUnreadTags(prev => {
-      const next = new Set(prev)
-      next.delete(activeTag)
-      return next
-    })
-  }, [activeTag])
-
-  const createPost = async (content: string) => {
-    if (!user) return
-
-    const post = {
-      content,
-      user: user.name,
-      tags: [activeTag],
-      timestamp: new Date().toISOString(),
-      readers: [user.name]
-    }
-
-    try {
-      const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(post)
-      })
-
-      if (!res.ok) throw new Error('Failed to create post')
-      
-      const data = await res.json()
-      setPosts(prev => [data, ...prev])
-      setRotations(prev => ({
-        ...prev,
-        [data.id]: theme.rotate ? (Math.random() - 0.5) * 2 : 0
-      }))
-    } catch (err) {
-      console.error('Error creating post:', err)
-    }
-  }
-
-  const markAsRead = async (postId: string) => {
-    if (!user) return
-
-    try {
-      const res = await fetch(`https://pack-api.raiyanrahmanxx.workers.dev/posts/${postId}/read`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: user.name })
-      })
-
-      if (!res.ok) throw new Error('Failed to mark as read')
-      
-      const data = await res.json()
-      setPosts(prev => prev.map(p => 
-        p.id === postId ? { ...p, readers: data.readers } : p
-      ))
-    } catch (err) {
-      console.error('Error marking as read:', err)
-    }
-  }
-
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
-  const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-
-  if (!user) return <NameSelector onSelect={setUser} theme={theme} />
-
-  const pinnedPost = pinnedPosts[activeTag]
-  const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
+  }, [content])
 
   return (
-    <div className={`min-h-screen ${theme.bg} font-mono transition-colors duration-200`}>
-      <div className="mx-auto max-w-2xl px-4 py-4">
-        <div className="flex items-center gap-2 mb-6">
-          <div 
-            className={`w-3/4 ${theme.nav} ${theme.cardShadow} ${theme.rounded} overflow-hidden transition-all duration-200 cursor-pointer`}
-            style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}
-            onClick={() => setIsNavExpanded(!isNavExpanded)}
-          >
-            <div className={`p-3 border-b border-dashed ${theme.border} flex items-center justify-between`}>
-              <div className="flex items-center space-x-2">
-                <Hash size={14} className={theme.text} />
-                <span className={theme.text}>{activeTag}</span>
-              </div>
-              <ChevronDown 
-                size={14}
-                className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''} ${theme.text}`}
-              />
-            </div>
-            
-            <div className={`divide-y divide-dashed ${theme.border}`}>
-              {tags.map(tag => (
-                <div
-                  key={tag}
-                  className={`p-3 ${tag === activeTag ? theme.accent : theme.accentHover}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleTagChange(tag)
-                  }}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Hash size={14} />
-                    <span>{tag}</span>
-                    {unreadTags.has(tag) && (
-                      <div className="h-2 w-2 rounded-full bg-red-500" />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button 
-            onClick={cycleTheme}
-            className={`p-3 ${theme.nav} ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
-          >
-            <Palette size={14} />
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          {pinnedPost && (
-            <Post 
-              {...pinnedPost} 
-              rotation={rotations['pinned'] || 0}
-              currentUser={user.name}
-              theme={theme}
-            />
-          )}
-
-          {filteredPosts
-            .slice()
-            .reverse()
-            .map(post => (
-              <div 
-                key={post.id}
-                onClick={() => !post.readers?.includes(user.name) && markAsRead(post.id)}
-              >
-                <Post 
-                  {...post} 
-                  rotation={rotations[post.id] || 0}
-                  currentUser={user.name}
-                  theme={theme}
-                />
-              </div>
-            ))}
-
-          <div className="space-y-2">
-            <NewPostEditor onSubmit={createPost} theme={theme} />
-            <div className="flex justify-end gap-2">
-              <button 
-                onClick={scrollToTop}
-                className={`${theme.nav} p-2 ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
-              >
-                <ChevronUp size={20} />
-              </button>
-              <button 
-                onClick={scrollToBottom}
-                className={`${theme.nav} p-2 ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
-              >
-                <ChevronDown size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
+      <div className={`prose prose-sm mb-2 font-mono ${theme.text}`}>
+        <ReactMarkdown>{content || '*preview*'}</ReactMarkdown>
       </div>
+      <textarea
+        ref={textareaRef}
+        value={content}
+        onChange={e => setContent(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="what's on your mind..."
+        className={`w-full resize-none ${theme.textArea} font-mono ${theme.text} 
+          placeholder-gray-500 focus:outline-none`}
+        style={{ minHeight: '3rem' }}
+      />
     </div>
   )
 }
