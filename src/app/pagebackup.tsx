@@ -1,9 +1,12 @@
 "use client"
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
+
+//hidebar
+import './globals.css' // Add this to import custom CSS
 
 type User = {
   name: string
@@ -18,7 +21,6 @@ type Post = {
   rotation?: number
   system?: boolean
   readers?: string[]
-  image?: string
 }
 
 const themes = {
@@ -134,69 +136,6 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
   }
 }
 
-function processImage(img: HTMLImageElement): Promise<string> {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
-    
-    const maxWidth = 800
-    const maxHeight = 800
-    let width = img.width
-    let height = img.height
-    
-    const scaleFactor = Math.min(maxWidth / width, maxHeight / height)
-    width = Math.round(width * scaleFactor)
-    height = Math.round(height * scaleFactor)
-    
-    canvas.width = width
-    canvas.height = height
-    
-    ctx.imageSmoothingEnabled = true
-    ctx.imageSmoothingQuality = 'high'
-    ctx.drawImage(img, 0, 0, width, height)
-    
-    let imageData = ctx.getImageData(0, 0, width, height)
-    
-    // grayscale
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const gray = Math.round(
-        imageData.data[i] * 0.299 + 
-        imageData.data[i + 1] * 0.587 + 
-        imageData.data[i + 2] * 0.114
-      )
-      imageData.data[i] = imageData.data[i + 1] = imageData.data[i + 2] = gray
-    }
-    
-    // dithering
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4
-        const oldPixel = imageData.data[idx]
-        const newPixel = oldPixel < 128 ? 0 : 255
-        const error = oldPixel - newPixel
-        
-        imageData.data[idx] = imageData.data[idx + 1] = imageData.data[idx + 2] = newPixel
-
-        if (x + 1 < width) {
-          imageData.data[idx + 4] += error * 7/16
-          if (y + 1 < height) {
-            imageData.data[idx + width * 4 + 4] += error * 1/16
-          }
-        }
-        if (y + 1 < height) {
-          imageData.data[idx + width * 4] += error * 5/16
-          if (x > 0) {
-            imageData.data[idx + width * 4 - 4] += error * 3/16
-          }
-        }
-      }
-    }
-    
-    ctx.putImageData(imageData, 0, 0)
-    resolve(canvas.toDataURL('image/webp', 0.85))
-  })
-}
-
 function formatPostDate(timestamp: string) {
   const date = new Date(timestamp)
   const now = new Date()
@@ -232,12 +171,12 @@ function NameSelector({ onSelect, theme }: {
   ]
 
   const handleSelect = (user: User) => {
-    onSelect(user)
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    onSelect(user);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg}`}>
+    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg} transition-colors duration-200`}>
       <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
         <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
@@ -258,15 +197,16 @@ function NameSelector({ onSelect, theme }: {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, readers = [], image, theme }: Omit<Post, 'id' | 'tags'> & { 
+function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme }: Omit<Post, 'id'> & { 
   theme: typeof themes[keyof typeof themes] 
 }) {
+  const formattedContent = content
   const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
   
   return (
     <div style={style}>
       <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
-        ${theme.cardShadow} ${theme.rounded} p-6`}>
+        ${theme.cardShadow} ${theme.rounded} p-6 transition-colors duration-200`}>
         {system && theme.rotate && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
         )}
@@ -280,24 +220,9 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
             </div>
           )}
         </div>
-        
-        {image && (
-          <div className="mb-4">
-            <img src={image} alt="" className="w-full" />
-          </div>
-        )}
-        
         <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} 
-            components={{ 
-              ul: (props) => <ul className="list-disc pl-5" {...props} />, 
-              ol: (props) => <ol className="list-decimal pl-5" {...props} /> 
-            }}
-          >
-            {content}
-          </ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ ul: (props) => <ul className="list-disc pl-5" {...props} />, ol: (props) => <ol className="list-decimal pl-5" {...props} /> }}>{formattedContent}</ReactMarkdown>
         </div>
-        
         {readers.length > 0 && (
           <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
             read by: {readers.join(' ')}
@@ -309,43 +234,10 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
 }
 
 function NewPostEditor({ onSubmit, theme }: { 
-  onSubmit: (content: string, image?: string) => void
+  onSubmit: (content: string) => void
   theme: typeof themes[keyof typeof themes]
 }) {
   const [content, setContent] = useState('')
-  const [image, setImage] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    
-    setUploading(true)
-    try {
-      const reader = new FileReader()
-      reader.onload = async (event) => {
-        const img = new Image()
-        img.onload = async () => {
-          const processed = await processImage(img)
-          setImage(processed)
-          setUploading(false)
-        }
-        img.src = event.target?.result as string
-      }
-      reader.readAsDataURL(file)
-    } catch (err) {
-      console.error('Error processing image:', err)
-      setUploading(false)
-    }
-  }
-
-  const handleSubmit = () => {
-    if (!content.trim() && !image) return
-    onSubmit(content, image || undefined)
-    setContent('')
-    setImage(null)
-  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -354,20 +246,15 @@ function NewPostEditor({ onSubmit, theme }: {
     }
   }
 
+  const handleSubmit = () => {
+    if (!content.trim()) return
+    onSubmit(content)
+    setContent('')
+  }
+
   return (
-    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
-      {image && (
-        <div className="mb-4">
-          <img src={image} alt="" className="w-full mb-2" />
-          <button 
-            onClick={() => setImage(null)}
-            className={`text-xs ${theme.textMuted} hover:${theme.text}`}
-          >
-            remove image
-          </button>
-        </div>
-      )}
-      
+    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} 
+      p-4 transition-colors duration-200`}>
       <div className={`prose prose-sm w-full font-mono ${theme.text}`}>
         <div className="min-h-[5rem]">
           <textarea
@@ -380,24 +267,9 @@ function NewPostEditor({ onSubmit, theme }: {
             rows={3}
           />
         </div>
+    
       </div>
-      
-      <div className="mt-2 flex justify-end space-x-2">
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/*"
-          onChange={handleImageUpload}
-        />
-        <button 
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110 
-            disabled:opacity-50 disabled:hover:scale-100`}
-        >
-          <Image size={16} />
-        </button>
+      <div className="mt-2 flex justify-end">
         <button 
           onClick={handleSubmit}
           className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
@@ -405,12 +277,6 @@ function NewPostEditor({ onSubmit, theme }: {
           <Send size={16} />
         </button>
       </div>
-      
-      {uploading && (
-        <div className={`mt-2 text-xs ${theme.textMuted}`}>
-          processing image...
-        </div>
-      )}
     </div>
   )
 }
@@ -445,7 +311,19 @@ export default function Home() {
     if (!theme.rotate) return
     const newRotations: Record<string, number> = {}
     postIds.forEach(id => {
-      newRotations[id] = (Math.random() - 0.5) * 2
+      const range = Math.floor(Math.random() * 3)
+      let rotation
+      switch(range) {
+        case 0:
+          rotation = (Math.random() - 0.5) * 1
+          break
+        case 1:
+          rotation = (Math.random() - 0.5) * 1.6
+          break
+        default:
+          rotation = (Math.random() - 0.5) * 2
+      }
+      newRotations[id] = rotation
     })
     setRotations(newRotations)
   }
@@ -475,6 +353,7 @@ export default function Home() {
         }
       }
       
+      // Autoscroll after initial posts load
       setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
     }
 
@@ -496,15 +375,15 @@ export default function Home() {
     localStorage.setItem('pack-theme', currentTheme)
   }, [currentTheme])
 
-  const createPost = async (content: string, image?: string) => {
+
+  const createPost = async (content: string) => {
     if (!user) return
 
     const post = {
       content,
       user: user.name,
       tags: [activeTag],
-      timestamp: new Date().toISOString(),
-      image
+      timestamp: new Date().toISOString()
     }
 
     try {
@@ -541,46 +420,9 @@ export default function Home() {
   const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
 
   return (
-    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text}`}>
+    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
       <div className="mx-auto max-w-2xl px-4 py-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div className={`flex-grow ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`} 
-            style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}>
-            <div className={`flex items-center justify-between p-3 cursor-pointer ${theme.border} border-b border-dashed`} 
-              onClick={() => setIsNavExpanded(!isNavExpanded)}>
-              <div className="flex items-center space-x-2">
-                {React.createElement(channelIcons[activeTag], { size: 14, className: 'mr-2' })}
-                <span className={theme.text}>{activeTag}</span>
-              </div>
-              <ChevronDown size={14} className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`} />
-            </div>
-            <div className="divide-y divide-dashed">
-              {tags.map(tag => (
-                <div
-                  key={tag}
-                  className={`p-3 cursor-pointer ${tag === activeTag ? `${theme.accent} ${theme.text}` : theme.textMuted}`}
-                  onClick={() => handleTagChange(tag)}
-                >
-                  <div className="flex items-center space-x-2">
-                    {React.createElement(channelIcons[tag], { size: 14 })}
-                    <span>{tag}</span>
-                    {unreadTags.has(tag) && (
-                      <div className="h-2 w-2 rounded-full bg-red-500" />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 ml-4">
-            <button onClick={cycleTheme} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}>
-              <Palette size={20} />
-            </button>
-            <button onClick={scrollToBottom} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}>
-              <ChevronDown size={20} />
-            </button>
-          </div>
-        </div>
+        <div className="mb-6 flex items-center justify-between"><div className={`flex-grow ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`} style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}><div className={`flex items-center justify-between p-3 cursor-pointer ${theme.border} border-b border-dashed`} onClick={() => setIsNavExpanded(!isNavExpanded)}><div className="flex items-center space-x-2">{React.createElement(channelIcons[activeTag], { size: 14, className: 'mr-2' })}<span className={theme.text}>{activeTag}</span></div><ChevronDown size={14} className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`} /></div><div className="divide-y divide-dashed">{tags.map(tag => (<div key={tag} className={`p-3 cursor-pointer ${tag === activeTag ? `${theme.accent} ${theme.text}` : theme.textMuted}`} onClick={() => handleTagChange(tag)}><div className="flex items-center space-x-2">{React.createElement(channelIcons[tag], { size: 14 })}<span>{tag}</span>{unreadTags.has(tag) && (<div className="h-2 w-2 rounded-full bg-red-500" />)}</div></div>))}</div></div><div className="flex items-center space-x-2 ml-4"><button onClick={cycleTheme} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}><Palette size={20} /></button><button onClick={scrollToBottom} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}><ChevronDown size={20} /></button></div></div>
         
         <div className="grid gap-6">
           {pinnedPost && (
