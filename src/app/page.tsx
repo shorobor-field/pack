@@ -170,6 +170,11 @@ function NameSelector({ onSelect, theme }: {
     { name: 'inan' }
   ]
 
+  const handleSelect = (user: User) => {
+    onSelect(user);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
   return (
     <div className={`fixed inset-0 flex items-center justify-center ${theme.bg} transition-colors duration-200`}>
       <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
@@ -178,7 +183,7 @@ function NameSelector({ onSelect, theme }: {
           {users.map(user => (
             <button
               key={user.name}
-              onClick={() => onSelect(user)}
+              onClick={() => handleSelect(user)}
               className={`group flex items-center justify-center space-x-2 ${theme.rounded} 
                 border-2 ${theme.border} ${theme.card} p-3 ${theme.text} 
                 transition-all ${theme.accentHover}`}
@@ -370,6 +375,7 @@ export default function Home() {
     localStorage.setItem('pack-theme', currentTheme)
   }, [currentTheme])
 
+
   const createPost = async (content: string) => {
     if (!user) return
 
@@ -388,16 +394,18 @@ export default function Home() {
       })
 
       if (!res.ok) throw new Error('Failed to create post')
-      
+    
       const data = await res.json()
       setPosts(prev => [data, ...prev])
-      
+    
       if (theme.rotate) {
         setRotations(prev => ({
           ...prev,
           [data.id]: (Math.random() - 0.5) * 2
         }))
       }
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
     } catch (err) {
       console.error('Error creating post:', err)
     }
