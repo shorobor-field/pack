@@ -258,9 +258,6 @@ function NewPostEditor({ onSubmit, theme }: {
             rows={3}
           />
         </div>
-        <div className="preview-only">
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
       </div>
       <div className="mt-2 flex justify-end">
         <button 
