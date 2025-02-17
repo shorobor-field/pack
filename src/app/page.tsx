@@ -166,25 +166,19 @@ function NameSelector({ onSelect, theme }: {
   ]
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg} transition-colors duration-200`}>
-      <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
-        <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {users.map(user => (
-            <button
-              key={user.name}
-              onClick={() => onSelect(user)}
-              className={`group flex items-center justify-center space-x-2 ${theme.rounded} 
-                border-2 ${theme.border} ${theme.card} p-3 ${theme.text} 
-                transition-all ${theme.accentHover}`}
-            >
-              <span className="font-mono">{user.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+   <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
+     {!user ? (
+       <NameSelector onSelect={setUser} theme={theme} />
+     ) : (
+       <>
+         <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4 overflow-x-auto`}>
+           {/* rest of the nav and content */}
+         </div>
+         {/* rest of the app */}
+       </>
+     )}
+   </div>
+ )
 }
 
 function Post({ content, user, system, rotation = 0, timestamp, theme }: Omit<Post, 'id'> & { 
