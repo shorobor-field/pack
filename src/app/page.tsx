@@ -223,7 +223,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
       <div className="sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4">
-        <div className="flex items-center justify-center space-x-4 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
+        <div className="flex items-center justify-center space-x-4 rounded-lg bg-[#FFF4E0] p-2 shadow-lg shadow-[#FFE5B4]">
           {tags.map((tag) => {
             const Icon = channelIcons[tag]
             return (
@@ -244,10 +244,10 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="mx-auto max-w-2xl px-4">
+      <div className="mx-auto max-w-2xl px-4 pb-32">
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post {...pinnedPost} rotation={Math.random() * 4 - 2} />
+            <Post {...pinnedPost} rotation={0} />
           )}
 
           {posts
@@ -258,21 +258,19 @@ export default function Home() {
         </div>
 
         <div className="fixed bottom-4 left-1/2 w-full max-w-2xl -translate-x-1/2 transform px-4">
-          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
+          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg shadow-[#FFE5B4]">
             <div className="mb-2 flex gap-2">
               <button 
                 onClick={() => setIsPreview(false)}
-                className={`flex items-center gap-1 text-sm ${!isPreview ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`rounded p-1 transition-colors ${!isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
               >
-                <Pencil size={14} />
-                edit
+                <Pencil size={16} />
               </button>
               <button
                 onClick={() => setIsPreview(true)}
-                className={`flex items-center gap-1 text-sm ${isPreview ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`rounded p-1 transition-colors ${isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
               >
-                <Eye size={14} />
-                preview
+                <Eye size={16} />
               </button>
             </div>
             {isPreview ? (
