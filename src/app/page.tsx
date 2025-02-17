@@ -206,7 +206,6 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
 
 
 // main app 
-}
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
