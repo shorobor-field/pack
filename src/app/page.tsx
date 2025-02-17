@@ -258,9 +258,6 @@ function NewPostEditor({ onSubmit, theme }: {
             rows={3}
           />
         </div>
-        <div className="preview-only">
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
       </div>
       <div className="mt-2 flex justify-end">
         <button 
@@ -410,8 +407,24 @@ export default function Home() {
     <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
       <div className="mx-auto max-w-2xl px-4 py-4">
         <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex items-center gap-2">
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={cycleTheme}
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
+            >
+              <Palette size={20} />
+            </button>
+            <button 
+              onClick={scrollToBottom}
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
+            >
+              <ChevronDown size={20} />
+            </button>
+          </div>
+          
           <div 
-            className={`w-4/5 ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`}
+            className={`flex-1 ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`}
             style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}
           >
             <div 
@@ -446,7 +459,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-          
+        </div>
           <div className="flex items-center space-x-2">
             <button 
               onClick={cycleTheme}
