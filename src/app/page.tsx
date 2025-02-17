@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
 import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil, ChevronUp, ChevronDown } from 'lucide-react'
@@ -140,7 +140,7 @@ function Post({ content, user, system, rotation = 0, timestamp }: Omit<Post, 'id
   )
 }
 
-function NewPostEditor({ onSubmit, activeTag }: { onSubmit: (content: string) => void, activeTag: string }) {
+function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
   const [content, setContent] = useState('')
   const [isPreview, setIsPreview] = useState(false)
 
@@ -344,7 +344,7 @@ export default function Home() {
             <Post key={post.id} {...post} rotation={rotations[post.id] || 0} />
           ))}
 
-          <NewPostEditor onSubmit={createPost} activeTag={activeTag} />
+          <NewPostEditor onSubmit={createPost} />
         </div>
       </div>
     </div>
