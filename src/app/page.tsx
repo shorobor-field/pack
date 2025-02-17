@@ -405,9 +405,9 @@ export default function Home() {
 
   return (
     <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
-      <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4`}>
+      <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4 overflow-x-auto`}>
         <div className={`flex items-center justify-between space-x-4 ${theme.nav} ${theme.rounded} 
-          ${theme.navShadow} p-2 transition-colors duration-200`}>
+          ${theme.navShadow} p-2 transition-colors duration-200 min-w-max`}>
           <div className="flex items-center space-x-4">
             {tags.map((tag) => {
               const Icon = channelIcons[tag]
