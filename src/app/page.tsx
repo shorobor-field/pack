@@ -216,7 +216,7 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], th
           )}
         </div>
         <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ ul: ({node, ...props}) => <ul className="list-disc pl-5" {...props} />, ol: ({node, ...props}) => <ol className="list-decimal pl-5" {...props} /> }}>{formattedContent}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ ul: (props) => <ul className="list-disc pl-5" {...props} />, ol: (props) => <ol className="list-decimal pl-5" {...props} /> }}>{formattedContent}</ReactMarkdown>
         </div>
         {readers.length > 0 && (
           <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
