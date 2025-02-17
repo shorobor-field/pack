@@ -22,7 +22,7 @@ const themes = {
   'playful-light': {
     bg: 'bg-[#FFE5B4]',
     nav: 'bg-[#FFF4E0]',
-    navShadow: 'shadow-[#FFE5B4]/60',
+    navShadow: 'shadow-lg shadow-[#FFE5B4]/60',
     card: 'bg-white',
     systemCard: 'bg-[#FFFACD]',
     cardShadow: 'shadow-lg',
@@ -32,12 +32,29 @@ const themes = {
     text: 'text-gray-800',
     textMuted: 'text-gray-600',
     rounded: 'rounded-lg',
+    textArea: 'bg-transparent',
+    rotate: true
+  },
+  'playful-dark': {
+    bg: 'bg-[#1F1F1F]',
+    nav: 'bg-[#2A2A2A]',
+    navShadow: 'shadow-lg shadow-black/40',
+    card: 'bg-[#2A2A2A]',
+    systemCard: 'bg-[#333333]',
+    cardShadow: 'shadow-lg shadow-black/20',
+    accent: 'bg-[#3A3A3A]',
+    accentHover: 'hover:bg-[#444444]',
+    border: 'border-[#404040]',
+    text: 'text-gray-200',
+    textMuted: 'text-gray-400',
+    rounded: 'rounded-lg',
+    textArea: 'bg-transparent',
     rotate: true
   },
   'corpo-light': {
     bg: 'bg-gray-50',
     nav: 'bg-white',
-    navShadow: 'shadow-sm',
+    navShadow: 'shadow-lg shadow-gray-200/60',
     card: 'bg-white',
     systemCard: 'bg-white',
     cardShadow: 'shadow-sm',
@@ -47,6 +64,23 @@ const themes = {
     text: 'text-gray-800',
     textMuted: 'text-gray-600',
     rounded: '',
+    textArea: 'bg-transparent',
+    rotate: false
+  },
+  'corpo-dark': {
+    bg: 'bg-[#0A0A0A]',
+    nav: 'bg-[#141414]',
+    navShadow: 'shadow-lg shadow-black/40',
+    card: 'bg-[#141414]',
+    systemCard: 'bg-[#141414]',
+    cardShadow: 'shadow-sm',
+    accent: 'bg-[#202020]',
+    accentHover: 'hover:bg-[#282828]',
+    border: 'border-[#282828]',
+    text: 'text-gray-200',
+    textMuted: 'text-gray-400',
+    rounded: '',
+    textArea: 'bg-transparent',
     rotate: false
   }
 } as const
@@ -120,7 +154,10 @@ function formatPostDate(timestamp: string) {
   return format(date, 'dd-MM-yyyy')
 }
 
-function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
+function NameSelector({ onSelect, theme }: { 
+  onSelect: (user: User) => void
+  theme: typeof themes[keyof typeof themes]
+}) {
   const users = [
     { name: 'raiyan' },
     { name: 'zarin' },
@@ -129,15 +166,16 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   ]
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-[#FFE5B4]">
-      <div className="w-80 rounded-lg bg-[#FFF4E0] p-8 shadow-xl">
-        <h2 className="mb-6 text-center font-mono text-gray-800">who are you?</h2>
+    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg}`}>
+      <div className={`w-80 ${theme.rounded} ${theme.nav} p-8 ${theme.cardShadow}`}>
+        <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-[#FFD580] bg-white p-3 text-gray-800 transition-all hover:bg-[#FFEBC1]"
+              className={`group flex items-center justify-center space-x-2 ${theme.rounded} border-2 
+                ${theme.border} ${theme.card} p-3 ${theme.text} transition-all ${theme.accentHover}`}
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -148,13 +186,16 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, theme }: Omit<Post, 'id'> & { theme: typeof themes[keyof typeof themes] }) {
+function Post({ content, user, system, rotation = 0, timestamp, theme }: Omit<Post, 'id'> & { 
+  theme: typeof themes[keyof typeof themes] 
+}) {
   const formattedContent = content.replace(/(?!\n\n)\n(?!\n)/g, '\n\n')
   const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
   
   return (
     <div style={style}>
-      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} ${theme.cardShadow} ${theme.rounded} p-6`}>
+      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
+        ${theme.cardShadow} ${theme.rounded} p-6 transition-colors duration-200`}>
         {system && theme.rotate && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
         )}
@@ -176,7 +217,10 @@ function Post({ content, user, system, rotation = 0, timestamp, theme }: Omit<Po
   )
 }
 
-function NewPostEditor({ onSubmit, theme }: { onSubmit: (content: string) => void, theme: typeof themes[keyof typeof themes] }) {
+function NewPostEditor({ onSubmit, theme }: { 
+  onSubmit: (content: string) => void
+  theme: typeof themes[keyof typeof themes]
+}) {
   const [content, setContent] = useState('')
   const [isPreview, setIsPreview] = useState(false)
 
@@ -194,7 +238,8 @@ function NewPostEditor({ onSubmit, theme }: { onSubmit: (content: string) => voi
   }
 
   return (
-    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
+    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} 
+      p-4 transition-colors duration-200`}>
       <div className="mb-2 flex gap-2">
         <button 
           onClick={() => setIsPreview(false)}
@@ -221,7 +266,8 @@ function NewPostEditor({ onSubmit, theme }: { onSubmit: (content: string) => voi
           onChange={e => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="what's on your mind..."
-          className={`w-full resize-none bg-transparent font-mono ${theme.text} placeholder-gray-500 focus:outline-none`}
+          className={`w-full resize-none ${theme.textArea} font-mono ${theme.text} 
+            placeholder-gray-500 focus:outline-none`}
           rows={3}
         />
       )}
@@ -248,8 +294,12 @@ export default function Home() {
   const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
 
-  const toggleTheme = () => {
-    setCurrentTheme(current => current === 'playful-light' ? 'corpo-light' : 'playful-light')
+  const cycleTheme = () => {
+    setCurrentTheme(current => {
+      const themeOrder: (keyof typeof themes)[] = ['playful-light', 'playful-dark', 'corpo-light', 'corpo-dark']
+      const currentIndex = themeOrder.indexOf(current)
+      return themeOrder[(currentIndex + 1) % themeOrder.length]
+    })
   }
 
   const generateRotations = (postIds: string[]) => {
@@ -275,7 +325,8 @@ export default function Home() {
 
   const handleTagChange = (tag: string) => {
     setActiveTag(tag)
-    generateRotations(['pinned', ...posts.filter(p => p.tags.includes(tag)).map(p => p.id)])
+    const filteredPosts = posts.filter(p => p.tags.includes(tag))
+    generateRotations(['pinned', ...filteredPosts.map(p => p.id)])
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
 
@@ -296,17 +347,20 @@ export default function Home() {
         }
       }
     }
-    
-  useEffect(() => {
-    if (posts.length > 0) {
-      generateRotations(['pinned', ...posts.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
-    }
-  }, [activeTag, posts.length])
 
     fetchPosts()
     const interval = setInterval(fetchPosts, 30000)
     return () => clearInterval(interval)
-  }, [activeTag, generateRotations])
+  }, [activeTag])
+
+  useEffect(() => {
+    localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
+    setUnreadTags(prev => {
+      const next = new Set(prev)
+      next.delete(activeTag)
+      return next
+    })
+  }, [activeTag])
 
   const createPost = async (content: string) => {
     if (!user) return
@@ -333,7 +387,7 @@ export default function Home() {
       if (theme.rotate) {
         setRotations(prev => ({
           ...prev,
-          [data.id]: Math.random() * 4 - 2
+          [data.id]: (Math.random() - 0.5) * 2
         }))
       }
     } catch (err) {
@@ -344,15 +398,16 @@ export default function Home() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
 
-  if (!user) return <NameSelector onSelect={setUser} />
+  if (!user) return <NameSelector onSelect={setUser} theme={theme} />
 
   const pinnedPost = pinnedPosts[activeTag]
   const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
 
   return (
-    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text}`}>
+    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
       <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4`}>
-        <div className={`flex items-center justify-between space-x-4 ${theme.nav} ${theme.rounded} ${theme.navShadow} p-2`}>
+        <div className={`flex items-center justify-between space-x-4 ${theme.nav} ${theme.rounded} 
+          ${theme.navShadow} p-2 transition-colors duration-200`}>
           <div className="flex items-center space-x-4">
             {tags.map((tag) => {
               const Icon = channelIcons[tag]
@@ -374,7 +429,7 @@ export default function Home() {
           </div>
           <div className="flex items-center space-x-2">
             <button 
-              onClick={toggleTheme}
+              onClick={cycleTheme}
               className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
             >
               <Palette size={20} />
