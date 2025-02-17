@@ -18,8 +18,6 @@ type Post = {
   system?: boolean
 }
 
-type Theme = 'playful-light' | 'playful-dark' | 'corpo-light' | 'corpo-dark'
-
 const themes = {
   'playful-light': {
     bg: 'bg-[#FFE5B4]',
@@ -306,13 +304,28 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
-    setUnreadTags(prev => {
-      const next = new Set(prev)
-      next.delete(activeTag)
-      return next
-    })
-  }, [activeTag])
+    const fetchPosts = async () => {
+      const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
+      const data = await res.json() as Post[]
+      setPosts(data)
+      generateRotations(['pinned', ...data.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
+      
+      const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
+      if (lastRead) {
+        const hasUnread = data.some(post => 
+          post.tags.includes(activeTag) && 
+          new Date(post.timestamp) > new Date(lastRead)
+        )
+        if (hasUnread) {
+          setUnreadTags(prev => new Set([...prev, activeTag]))
+        }
+      }
+    }
+
+    fetchPosts()
+    const interval = setInterval(fetchPosts, 30000)
+    return () => clearInterval(interval)
+  }, [activeTag, generateRotations])
 
   const createPost = async (content: string) => {
     if (!user) return
