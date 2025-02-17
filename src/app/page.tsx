@@ -284,7 +284,6 @@ export default function Home() {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       const data = await res.json() as Post[]
       setPosts(data)
-      generateRotations(['pinned', ...data.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
       
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
       if (lastRead) {
@@ -297,30 +296,12 @@ export default function Home() {
         }
       }
     }
-
-    fetchPosts()
-    const interval = setInterval(fetchPosts, 30000)
-    return () => clearInterval(interval)
-  }, [])
-
+    
   useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
-      const data = await res.json() as Post[]
-      setPosts(data)
-      generateRotations(['pinned', ...data.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
-      
-      const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
-      if (lastRead) {
-        const hasUnread = data.some(post => 
-          post.tags.includes(activeTag) && 
-          new Date(post.timestamp) > new Date(lastRead)
-        )
-        if (hasUnread) {
-          setUnreadTags(prev => new Set([...prev, activeTag]))
-        }
-      }
+    if (posts.length > 0) {
+      generateRotations(['pinned', ...posts.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
     }
+  }, [activeTag, posts.length])
 
     fetchPosts()
     const interval = setInterval(fetchPosts, 30000)
