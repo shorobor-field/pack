@@ -204,6 +204,10 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
   
 }
 
+
+// main app 
+}
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -326,7 +330,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-amber-50 font-mono">
       <div className="mx-auto max-w-2xl px-4 py-4">
-        {/* Channel Selector */}
         <div 
           className="w-full bg-white shadow-lg mb-6 overflow-hidden transition-all duration-200 cursor-pointer"
           style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}
@@ -365,14 +368,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Posts */}
         <div className="space-y-6">
           {pinnedPost && (
             <Post 
               {...pinnedPost} 
               rotation={rotations['pinned'] || 0}
               currentUser={user.name}
-              onRead={() => {}}
             />
           )}
 
@@ -392,10 +393,8 @@ export default function Home() {
               </div>
             ))}
 
-          {/* New Post Card */}
           <NewPostEditor onSubmit={createPost} />
 
-          {/* Scroll Buttons */}
           <div className="fixed bottom-4 right-4 flex flex-col gap-2">
             <button 
               onClick={scrollToTop}
