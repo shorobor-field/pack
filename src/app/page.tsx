@@ -88,7 +88,7 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ tags, content, user, system, rotation, timestamp }: Omit<Post, 'id'>) {
+function Post({ content, user, system, rotation, timestamp }: Omit<Post, 'id'>) {
   const date = new Date(timestamp)
   const isOld = isAfter(date, sub(new Date(), { months: 1 }))
   const displayDate = isOld 
