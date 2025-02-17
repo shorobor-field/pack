@@ -462,7 +462,7 @@ export default function Home() {
           
           <div className="mx-auto max-w-2xl px-4 pb-16">
             <div className="grid gap-6">
-              {pinnedPost && (
+              {pinnedPosts[activeTag] && (
                 <Post {...pinnedPosts[activeTag]} rotation={rotations['pinned'] || 0} theme={theme} />
               )}
 
