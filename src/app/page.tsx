@@ -36,17 +36,17 @@ const themes = {
     rotate: true
   },
   'playful-dark': {
-    bg: 'bg-[#1F1F1F]',
-    nav: 'bg-[#2A2A2A]',
+    bg: 'bg-[#1e1e2e]', // catppuccin mocha base
+    nav: 'bg-[#181825]', // mocha mantle
     navShadow: 'shadow-lg shadow-black/40',
-    card: 'bg-[#2A2A2A]',
-    systemCard: 'bg-[#333333]',
+    card: 'bg-[#181825]', // mocha mantle
+    systemCard: 'bg-[#11111b]', // mocha crust
     cardShadow: 'shadow-lg shadow-black/20',
-    accent: 'bg-[#3A3A3A]',
-    accentHover: 'hover:bg-[#444444]',
-    border: 'border-[#404040]',
-    text: 'text-gray-200',
-    textMuted: 'text-gray-400',
+    accent: 'bg-[#cba6f7]', // mocha mauve
+    accentHover: 'hover:bg-[#f5c2e7]', // mocha pink
+    border: 'border-[#313244]', // mocha surface0
+    text: 'text-[#cdd6f4]', // mocha text
+    textMuted: 'text-[#9399b2]', // mocha subtext0
     rounded: 'rounded-lg',
     textArea: 'bg-transparent',
     rotate: true
@@ -68,15 +68,15 @@ const themes = {
     rotate: false
   },
   'corpo-dark': {
-    bg: 'bg-[#0A0A0A]',
-    nav: 'bg-[#141414]',
+    bg: 'bg-[#1F1F1F]',
+    nav: 'bg-[#2A2A2A]',
     navShadow: 'shadow-lg shadow-black/40',
-    card: 'bg-[#141414]',
-    systemCard: 'bg-[#141414]',
-    cardShadow: 'shadow-sm',
-    accent: 'bg-[#202020]',
-    accentHover: 'hover:bg-[#282828]',
-    border: 'border-[#282828]',
+    card: 'bg-[#2A2A2A]',
+    systemCard: 'bg-[#333333]',
+    cardShadow: 'shadow-lg shadow-black/20',
+    accent: 'bg-[#3A3A3A]',
+    accentHover: 'hover:bg-[#444444]',
+    border: 'border-[#404040]',
     text: 'text-gray-200',
     textMuted: 'text-gray-400',
     rounded: '',
@@ -293,9 +293,9 @@ export default function Home() {
   const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('pack-theme')
-      return (saved as keyof typeof themes) || 'playful-light'
+      return (saved as keyof typeof themes) || 'corpo-light'
     }
-    return 'playful-light'
+    return 'corpo-light'
   })
 
   const theme = themes[currentTheme]
