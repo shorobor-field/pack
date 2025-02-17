@@ -18,7 +18,7 @@ type Post = {
   system?: boolean
 }
 
-const channelIcons = {
+const channelIcons: Record<string, React.ElementType> = {
   timeline: Layout,
   discussion: MessageSquare,
   docs: FileText,
