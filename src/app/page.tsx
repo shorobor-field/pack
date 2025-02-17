@@ -183,20 +183,29 @@ export default function Home() {
       content: newPost,
       user: user.name,
       tags: [activeTag],
-      rotation: createRotation(),
-      timestamp: new Date().toISOString()
+      rotation: createRotation()
     }
 
-    const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(post)
-    })
+    try {
+      const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(post)
+      })
 
-    if (res.ok) {
-      const newPost = await res.json()
-      setPosts(prev => [newPost, ...prev])
+      if (!res.ok) throw new Error('Failed to create post')
+      
+      const data = await res.json()
+      console.log('Post created:', data) // debug log
+      
+      setPosts(prev => [{
+        ...data,
+        rotation: post.rotation
+      }, ...prev])
+      
       setNewPost('')
+    } catch (err) {
+      console.error('Error creating post:', err)
     }
   }
 
