@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image as LucideImage } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import Image from 'next/image'
 
@@ -403,7 +403,7 @@ function NewPostEditor({ onSubmit, theme }: {
           className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110 
             disabled:opacity-50 disabled:hover:scale-100`}
         >
-          <Image size={16} />
+          <LucideImage size={16} />
         </button>
         <button 
           onClick={handleSubmit}
