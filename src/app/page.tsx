@@ -17,6 +17,61 @@ type Post = {
   readers?: string[]
 }
 
+const themes = {
+  'playful-light': {
+    bg: 'bg-amber-50',
+    nav: 'bg-white',
+    cardShadow: 'shadow-lg',
+    card: 'bg-white',
+    accent: 'bg-black text-white',
+    accentHover: 'hover:bg-gray-100',
+    border: 'border-gray-200',
+    text: 'text-gray-800',
+    textMuted: 'text-gray-500',
+    rounded: 'rounded',
+    rotate: true
+  },
+  'playful-dark': {
+    bg: 'bg-gray-900',
+    nav: 'bg-gray-800',
+    cardShadow: 'shadow-lg shadow-black/20',
+    card: 'bg-gray-800',
+    accent: 'bg-white text-black',
+    accentHover: 'hover:bg-gray-700',
+    border: 'border-gray-700',
+    text: 'text-gray-100',
+    textMuted: 'text-gray-400',
+    rounded: 'rounded',
+    rotate: true
+  },
+  'corpo-light': {
+    bg: 'bg-white',
+    nav: 'bg-gray-50',
+    cardShadow: 'shadow-sm',
+    card: 'bg-gray-50',
+    accent: 'bg-black text-white',
+    accentHover: 'hover:bg-gray-100',
+    border: 'border-gray-200',
+    text: 'text-gray-800',
+    textMuted: 'text-gray-500',
+    rounded: '',
+    rotate: false
+  },
+  'corpo-dark': {
+    bg: 'bg-gray-950',
+    nav: 'bg-gray-900',
+    cardShadow: 'shadow-sm',
+    card: 'bg-gray-900',
+    accent: 'bg-white text-black',
+    accentHover: 'hover:bg-gray-800',
+    border: 'border-gray-800',
+    text: 'text-gray-100',
+    textMuted: 'text-gray-400',
+    rounded: '',
+    rotate: false
+  }
+} as const
+
 const channelIcons: Record<string, React.ElementType> = {
   timeline: Hash,
   discussion: MessageSquare,
@@ -86,15 +141,16 @@ function formatPostDate(timestamp: string) {
   return format(date, 'dd-MM-yyyy')
 }
 
-// regex to find urls in text
 const urlRegex = /(https?:\/\/[^\s]+)/g
 
-// convert urls to markdown links
 function linkifyText(text: string): string {
   return text.replace(urlRegex, url => `[${url}](${url})`)
 }
 
-function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
+function NameSelector({ onSelect, theme }: { 
+  onSelect: (user: User) => void
+  theme: typeof themes[keyof typeof themes]
+}) {
   const users = [
     { name: 'raiyan' },
     { name: 'zarin' },
@@ -103,17 +159,16 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   ]
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-amber-50">
-      <div className="w-80 bg-white p-8 shadow-xl">
-        <h2 className="mb-6 text-center font-mono">who are you?</h2>
+    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg}`}>
+      <div className={`w-80 ${theme.nav} p-8 ${theme.cardShadow} ${theme.rounded}`}>
+        <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className="group flex items-center justify-center space-x-2 border-2 
-                border-black bg-white p-3 text-black transition-all 
-                hover:-translate-y-0.5 hover:bg-black hover:text-white"
+              className={`group flex items-center justify-center space-x-2 border-2 
+                ${theme.border} ${theme.card} p-3 ${theme.text} transition-all ${theme.accentHover}`}
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -124,35 +179,38 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, readers = [], currentUser }: 
-  Omit<Post, 'id' | 'tags'> & { currentUser: string }) {
+function Post({ content, user, system, rotation = 0, timestamp, readers = [], currentUser, theme }: 
+  Omit<Post, 'id' | 'tags'> & { 
+    currentUser: string
+    theme: typeof themes[keyof typeof themes]
+  }) {
   const [isHovered, setIsHovered] = useState(false)
-  const style = { transform: `rotate(${rotation}deg)` }
+  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
   
   return (
     <div style={style}>
       <div 
-        className="relative bg-white p-6 shadow-lg transition-all hover:shadow-xl"
+        className={`relative ${theme.card} p-6 ${theme.cardShadow} transition-all hover:shadow-xl ${theme.rounded}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {system && (
+        {system && theme.rotate && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 
             transform rounded-full bg-red-500" />
         )}
-        <div className="mb-4 flex items-center justify-between border-b border-dashed border-gray-300 pb-2">
-          <div className="text-xs text-gray-500">{user}</div>
+        <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
+          <div className={theme.textMuted}>{user}</div>
           {!system && (
-            <div className="text-xs text-gray-500">
+            <div className={theme.textMuted}>
               {formatPostDate(timestamp)}
             </div>
           )}
         </div>
-        <div className="prose prose-sm max-w-none whitespace-pre-wrap font-mono">
+        <div className={`prose prose-sm max-w-none whitespace-pre-wrap font-mono ${theme.text}`}>
           <ReactMarkdown>{linkifyText(content)}</ReactMarkdown>
         </div>
         {isHovered && readers.length > 0 && (
-          <div className="mt-2 text-xs text-gray-400">
+          <div className={`mt-2 text-xs ${theme.textMuted}`}>
             read by: {readers.filter(r => r !== currentUser).join(' ')}
           </div>
         )}
@@ -161,7 +219,10 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], cu
   )
 }
 
-function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
+function NewPostEditor({ onSubmit, theme }: { 
+  onSubmit: (content: string) => void
+  theme: typeof themes[keyof typeof themes]
+}) {
   const [content, setContent] = useState('')
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -178,8 +239,8 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
   }
 
   return (
-    <div className="bg-white p-4 shadow-lg">
-      <div className="mb-2 prose prose-sm max-w-none font-mono">
+    <div className={`${theme.card} p-4 ${theme.cardShadow} ${theme.rounded}`}>
+      <div className={`mb-2 prose prose-sm max-w-none font-mono ${theme.text}`}>
         <ReactMarkdown>{linkifyText(content)}</ReactMarkdown>
       </div>
       <div className="flex items-end gap-2">
@@ -188,13 +249,13 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
           onChange={e => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="what's on your mind..."
-          className="w-full resize-none bg-transparent font-mono 
-            placeholder-gray-500 focus:outline-none"
+          className={`w-full resize-none bg-transparent font-mono ${theme.text}
+            placeholder:${theme.textMuted} focus:outline-none`}
           rows={3}
         />
         <button 
           onClick={handleSubmit}
-          className="shrink-0 bg-black p-2 text-white"
+          className={`shrink-0 p-2 ${theme.accent} transition-all hover:scale-105`}
         >
           <Send size={16} />
         </button>
@@ -203,9 +264,6 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
   )
   
 }
-
-
-// main app 
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
@@ -383,13 +441,6 @@ export default function Home() {
             className={`p-3 ${theme.nav} ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
           >
             <Palette size={14} />
-          </button>
-
-          <button 
-            onClick={scrollToTop}
-            className={`p-3 ${theme.nav} ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
-          >
-            <ChevronUp size={14} />
           </button>
         </div>
 
