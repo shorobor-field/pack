@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil, ChevronUp, ChevronDown } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil, ChevronUp, ChevronDown, Send } from 'lucide-react'
 
 type User = {
   name: string
@@ -116,6 +116,7 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
 }
 
 function Post({ content, user, system, rotation = 0, timestamp }: Omit<Post, 'id'>) {
+  const formattedContent = content.split('\n').join('\n\n')
   return (
     <div style={{ transform: `rotate(${rotation}deg)` }}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
@@ -133,7 +134,7 @@ function Post({ content, user, system, rotation = 0, timestamp }: Omit<Post, 'id
           )}
         </div>
         <div className="prose prose-sm max-w-none font-mono text-gray-800">
-          <ReactMarkdown>{content}</ReactMarkdown>
+          <ReactMarkdown>{formattedContent}</ReactMarkdown>
         </div>
       </div>
     </div>
@@ -162,13 +163,13 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
       <div className="mb-2 flex gap-2">
         <button 
           onClick={() => setIsPreview(false)}
-          className={`rounded p-1 transition-colors ${!isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
+          className={`rounded p-1 transition-all hover:scale-110 ${!isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
         >
           <Pencil size={16} />
         </button>
         <button
           onClick={() => setIsPreview(true)}
-          className={`rounded p-1 transition-colors ${isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
+          className={`rounded p-1 transition-all hover:scale-110 ${isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
         >
           <Eye size={16} />
         </button>
@@ -190,9 +191,9 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
       <div className="mt-2 flex justify-end">
         <button 
           onClick={handleSubmit}
-          className="rounded-lg bg-[#FFD580] px-4 py-1 text-sm text-gray-800 hover:bg-[#FFEBC1]"
+          className="rounded-lg p-2 text-gray-800 transition-all hover:scale-110 hover:bg-[#FFD580]"
         >
-          post
+          <Send size={16} />
         </button>
       </div>
     </div>
@@ -334,13 +335,13 @@ export default function Home() {
           <div className="flex items-center space-x-2">
             <button 
               onClick={scrollToTop}
-              className="rounded-lg p-2 text-gray-600 hover:bg-[#FFEBC1]"
+              className="rounded-lg p-2 text-gray-600 transition-all hover:scale-110 hover:bg-[#FFEBC1]"
             >
               <ChevronUp size={20} />
             </button>
             <button 
               onClick={scrollToBottom}
-              className="rounded-lg p-2 text-gray-600 hover:bg-[#FFEBC1]"
+              className="rounded-lg p-2 text-gray-600 transition-all hover:scale-110 hover:bg-[#FFEBC1]"
             >
               <ChevronDown size={20} />
             </button>
