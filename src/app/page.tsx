@@ -207,6 +207,9 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
 
 // main app 
 
+}
+
+// using the existing theme types defined above
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -214,13 +217,15 @@ export default function Home() {
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const [isNavExpanded, setIsNavExpanded] = useState(false)
+  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>('playful-light')
 
+  const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
 
   const generateRotations = (postIds: string[]) => {
     const newRotations: Record<string, number> = {}
     postIds.forEach(id => {
-      const rotation = (Math.random() - 0.5) * 2
+      const rotation = theme.rotate ? (Math.random() - 0.5) * 2 : 0
       newRotations[id] = rotation
     })
     setRotations(newRotations)
@@ -232,6 +237,14 @@ export default function Home() {
     const filteredPosts = posts.filter(p => p.tags.includes(tag))
     generateRotations(['pinned', ...filteredPosts.map(p => p.id)])
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
+  }
+
+  const cycleTheme = () => {
+    setCurrentTheme(current => {
+      const themeOrder: (keyof typeof themes)[] = ['playful-light', 'playful-dark', 'corpo-light', 'corpo-dark']
+      const currentIndex = themeOrder.indexOf(current)
+      return themeOrder[(currentIndex + 1) % themeOrder.length]
+    })
   }
 
   useEffect(() => {
@@ -290,7 +303,7 @@ export default function Home() {
       setPosts(prev => [data, ...prev])
       setRotations(prev => ({
         ...prev,
-        [data.id]: (Math.random() - 0.5) * 2
+        [data.id]: theme.rotate ? (Math.random() - 0.5) * 2 : 0
       }))
     } catch (err) {
       console.error('Error creating post:', err)
@@ -321,50 +334,66 @@ export default function Home() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
 
-  if (!user) return <NameSelector onSelect={setUser} />
+  if (!user) return <NameSelector onSelect={setUser} theme={theme} />
 
   const pinnedPost = pinnedPosts[activeTag]
   const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
 
   return (
-    <div className="min-h-screen bg-amber-50 font-mono">
+    <div className={`min-h-screen ${theme.bg} font-mono transition-colors duration-200`}>
       <div className="mx-auto max-w-2xl px-4 py-4">
-        <div 
-          className="w-full bg-white shadow-lg mb-6 overflow-hidden transition-all duration-200 cursor-pointer"
-          style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}
-          onClick={() => setIsNavExpanded(!isNavExpanded)}
-        >
-          <div className="p-3 border-b border-dashed border-gray-200 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Hash size={14} />
-              <span>{activeTag}</span>
-            </div>
-            <ChevronDown 
-              size={14}
-              className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`}
-            />
-          </div>
-          
-          <div className="divide-y divide-dashed divide-gray-200">
-            {tags.map(tag => (
-              <div
-                key={tag}
-                className={`p-3 ${tag === activeTag ? 'bg-black text-white' : 'hover:bg-gray-50'}`}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleTagChange(tag)
-                }}
-              >
-                <div className="flex items-center space-x-2">
-                  <Hash size={14} />
-                  <span>{tag}</span>
-                  {unreadTags.has(tag) && (
-                    <div className="h-2 w-2 rounded-full bg-red-500" />
-                  )}
-                </div>
+        <div className="flex items-center gap-2 mb-6">
+          <div 
+            className={`w-3/4 ${theme.nav} ${theme.cardShadow} ${theme.rounded} overflow-hidden transition-all duration-200 cursor-pointer`}
+            style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}
+            onClick={() => setIsNavExpanded(!isNavExpanded)}
+          >
+            <div className={`p-3 border-b border-dashed ${theme.border} flex items-center justify-between`}>
+              <div className="flex items-center space-x-2">
+                <Hash size={14} className={theme.text} />
+                <span className={theme.text}>{activeTag}</span>
               </div>
-            ))}
+              <ChevronDown 
+                size={14}
+                className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''} ${theme.text}`}
+              />
+            </div>
+            
+            <div className={`divide-y divide-dashed ${theme.border}`}>
+              {tags.map(tag => (
+                <div
+                  key={tag}
+                  className={`p-3 ${tag === activeTag ? theme.accent : theme.accentHover}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleTagChange(tag)
+                  }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Hash size={14} />
+                    <span>{tag}</span>
+                    {unreadTags.has(tag) && (
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
+          <button 
+            onClick={cycleTheme}
+            className={`p-3 ${theme.nav} ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
+          >
+            <Palette size={14} />
+          </button>
+
+          <button 
+            onClick={scrollToTop}
+            className={`p-3 ${theme.nav} ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
+          >
+            <ChevronUp size={14} />
+          </button>
         </div>
 
         <div className="space-y-6">
@@ -373,6 +402,7 @@ export default function Home() {
               {...pinnedPost} 
               rotation={rotations['pinned'] || 0}
               currentUser={user.name}
+              theme={theme}
             />
           )}
 
@@ -388,25 +418,27 @@ export default function Home() {
                   {...post} 
                   rotation={rotations[post.id] || 0}
                   currentUser={user.name}
+                  theme={theme}
                 />
               </div>
             ))}
 
-          <NewPostEditor onSubmit={createPost} />
-
-          <div className="fixed bottom-4 right-4 flex flex-col gap-2">
-            <button 
-              onClick={scrollToTop}
-              className="bg-white p-2 shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <ChevronUp size={20} />
-            </button>
-            <button 
-              onClick={scrollToBottom}
-              className="bg-white p-2 shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <ChevronDown size={20} />
-            </button>
+          <div className="space-y-2">
+            <NewPostEditor onSubmit={createPost} theme={theme} />
+            <div className="flex justify-end gap-2">
+              <button 
+                onClick={scrollToTop}
+                className={`${theme.nav} p-2 ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
+              >
+                <ChevronUp size={20} />
+              </button>
+              <button 
+                onClick={scrollToBottom}
+                className={`${theme.nav} p-2 ${theme.cardShadow} ${theme.rounded} ${theme.text} transition-all hover:scale-105`}
+              >
+                <ChevronDown size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
