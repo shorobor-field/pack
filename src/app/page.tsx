@@ -243,6 +243,8 @@ export default function Home() {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       const data = await res.json() as Post[]
       setPosts(data)
+      // Generate initial rotations
+      generateRotations(['pinned', ...data.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
       
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
       if (lastRead) {
@@ -313,7 +315,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
       <div className="sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4">
-        <div className="flex items-center justify-between space-x-4 rounded-lg bg-[#FFF4E0] p-2 shadow-lg shadow-[#FFE5B4]">
+        <div className="flex items-center justify-between space-x-4 rounded-lg bg-[#FFF4E0] p-2 shadow-lg shadow-[#FFE5B4]/60">
           <div className="flex items-center space-x-4">
             {tags.map((tag) => {
               const Icon = channelIcons[tag]
