@@ -93,44 +93,6 @@ const channelIcons: Record<string, React.ElementType> = {
   sources: Link
 }
 
-const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
-  timeline: {
-    content: "everything goes here. this is the main feed.",
-    user: "system",
-    tags: ["timeline"],
-    system: true,
-    timestamp: new Date().toISOString()
-  },
-  discussion: {
-    content: "general chat for anything and everything",
-    user: "system",
-    tags: ["discussion"],
-    system: true,
-    timestamp: new Date().toISOString()
-  },
-  docs: {
-    content: "documentation and longer form writing lives here",
-    user: "system",
-    tags: ["docs"],
-    system: true,
-    timestamp: new Date().toISOString()
-  },
-  neurotech: {
-    content: "discoveries about cognition and productivity",
-    user: "system",
-    tags: ["neurotech"],
-    system: true,
-    timestamp: new Date().toISOString()
-  },
-  sources: {
-    content: "interesting links and resources",
-    user: "system",
-    tags: ["sources"],
-    system: true,
-    timestamp: new Date().toISOString()
-  }
-}
-
 function formatPostDate(timestamp: string) {
   const date = new Date(timestamp)
   const now = new Date()
@@ -301,6 +263,44 @@ export default function Home() {
   const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
 
+  const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
+    timeline: {
+      content: "everything goes here. this is the main feed.",
+      user: "system",
+      tags: ["timeline"],
+      system: true,
+      timestamp: new Date().toISOString()
+    },
+    discussion: {
+      content: "general chat for anything and everything",
+      user: "system",
+      tags: ["discussion"],
+      system: true,
+      timestamp: new Date().toISOString()
+    },
+    docs: {
+      content: "documentation and longer form writing lives here",
+      user: "system",
+      tags: ["docs"],
+      system: true,
+      timestamp: new Date().toISOString()
+    },
+    neurotech: {
+      content: "discoveries about cognition and productivity",
+      user: "system",
+      tags: ["neurotech"],
+      system: true,
+      timestamp: new Date().toISOString()
+    },
+    sources: {
+      content: "interesting links and resources",
+      user: "system",
+      tags: ["sources"],
+      system: true,
+      timestamp: new Date().toISOString()
+    }
+  }
+
   useEffect(() => {
     localStorage.setItem('pack-theme', currentTheme)
   }, [currentTheme])
@@ -463,10 +463,11 @@ export default function Home() {
           <div className="mx-auto max-w-2xl px-4 pb-16">
             <div className="grid gap-6">
               {pinnedPost && (
-                <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} />
+                <Post {...pinnedPosts[activeTag]} rotation={rotations['pinned'] || 0} theme={theme} />
               )}
 
-              {filteredPosts
+              {posts
+                .filter(post => post.tags.includes(activeTag))
                 .slice()
                 .reverse()
                 .map(post => (
