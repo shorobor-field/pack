@@ -394,9 +394,9 @@ function NewPostEditor({ onSubmit, theme }: {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = (event: ProgressEvent<FileReader>) => {
       const img = new Image();
-      img.src = event.target.result as string;
+      img.src = (event.target?.result as string) || '';
       img.onload = () => {
         setImage(processImage(img));
       };
