@@ -207,9 +207,6 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
 
 // main app 
 
-}
-
-// using the existing theme types defined above
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
