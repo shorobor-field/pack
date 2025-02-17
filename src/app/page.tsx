@@ -4,6 +4,7 @@ import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
 import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
+import Image from 'next/image'
 
 type User = {
   name: string
@@ -155,7 +156,7 @@ function processImage(img: HTMLImageElement): Promise<string> {
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(img, 0, 0, width, height)
     
-    let imageData = ctx.getImageData(0, 0, width, height)
+    const imageData = ctx.getImageData(0, 0, width, height)
     
     // grayscale
     for (let i = 0; i < imageData.data.length; i += 4) {
@@ -283,7 +284,13 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
         
         {image && (
           <div className="mb-4">
-            <img src={image} alt="" className="w-full" />
+            <Image 
+              src={image} 
+              alt="Post image"
+              width={800}
+              height={600}
+              className="w-full"
+            />
           </div>
         )}
         
