@@ -146,6 +146,17 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
   }
 }
 
+function applyThemeToImage(imageUrl: string, themeName: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const processed = processImage(img, themeName)
+      resolve(processed)
+    }
+    img.src = imageUrl
+  })
+}
+
 function processImage(img: HTMLImageElement, themeName: string): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas')
@@ -281,6 +292,13 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
   theme: typeof themes[keyof typeof themes] 
 }) {
   const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
+  const [processedImage, setProcessedImage] = useState(image)
+
+  useEffect(() => {
+    if (image) {
+      applyThemeToImage(image, currentTheme).then(setProcessedImage)
+    }
+  }, [image, currentTheme])
   
   return (
     <div style={style}>
@@ -300,10 +318,10 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
           )}
         </div>
         
-        {image && (
+        {processedImage && (
           <div className="mb-4">
             <Image 
-              src={image} 
+              src={processedImage}  
               alt="Post image"
               width={800}
               height={600}
