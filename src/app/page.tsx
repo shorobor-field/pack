@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
 import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
+import remarkGfm from 'remark-gfm'
 
 //hidebar
 import './globals.css' // Add this to import custom CSS
@@ -215,7 +216,7 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], th
           )}
         </div>
         <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown>{formattedContent}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ ul: ({node, ...props}) => <ul className="list-disc pl-5" {...props} />, ol: ({node, ...props}) => <ol className="list-decimal pl-5" {...props} /> }}>{formattedContent}</ReactMarkdown>
         </div>
         {readers.length > 0 && (
           <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
