@@ -3,20 +3,91 @@ import { useState, useEffect } from 'react'
 import { formatDistanceToNow, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
 
-// keeping the existing User and base Post types, adding timestamp
+type User = {
+  name: string
+}
+
 type Post = {
   id: string
   tags: string[]
   content: string
   user: string
-  timestamp: string // new
+  timestamp: string
   rotation?: number
   system?: boolean
 }
 
-// keep name selector exactly as is, no changes needed there...
+const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
+  timeline: {
+    content: "everything goes here. this is the main feed.",
+    user: "system",
+    tags: ["timeline"],
+    system: true,
+    rotation: (Math.random() * 4 - 2),
+    timestamp: new Date().toISOString()
+  },
+  discussion: {
+    content: "general chat for anything and everything",
+    user: "system",
+    tags: ["discussion"],
+    system: true,
+    rotation: (Math.random() * 4 - 2),
+    timestamp: new Date().toISOString()
+  },
+  docs: {
+    content: "documentation and longer form writing lives here",
+    user: "system",
+    tags: ["docs"],
+    system: true,
+    rotation: (Math.random() * 4 - 2),
+    timestamp: new Date().toISOString()
+  },
+  neurotech: {
+    content: "discoveries about cognition and productivity",
+    user: "system",
+    tags: ["neurotech"],
+    system: true,
+    rotation: (Math.random() * 4 - 2),
+    timestamp: new Date().toISOString()
+  },
+  sources: {
+    content: "interesting links and resources",
+    user: "system",
+    tags: ["sources"],
+    system: true,
+    rotation: (Math.random() * 4 - 2),
+    timestamp: new Date().toISOString()
+  }
+}
 
-// modified post component
+function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
+  const users = [
+    { name: 'raiyan' },
+    { name: 'zarin' },
+    { name: 'jeba' },
+    { name: 'inan' }
+  ]
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-[#FFE5B4]">
+      <div className="w-80 rounded-lg bg-[#FFF4E0] p-8 shadow-xl">
+        <h2 className="mb-6 text-center font-mono text-gray-800">who are you?</h2>
+        <div className="grid grid-cols-2 gap-4">
+          {users.map(user => (
+            <button
+              key={user.name}
+              onClick={() => onSelect(user)}
+              className="group flex items-center justify-center space-x-2 rounded-lg border-2 border-[#FFD580] bg-white p-3 text-gray-800 transition-all hover:bg-[#FFF4E0]"
+            >
+              <span className="font-mono">{user.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Post({ tags, content, user, system, rotation, timestamp }: Omit<Post, 'id'>) {
   const date = new Date(timestamp)
   const isOld = isAfter(date, sub(new Date(), { months: 1 }))
@@ -46,7 +117,6 @@ function Post({ tags, content, user, system, rotation, timestamp }: Omit<Post, '
   )
 }
 
-// main component with new features
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -55,7 +125,13 @@ export default function Home() {
   const [isPreview, setIsPreview] = useState(false)
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
 
-  // keep existing tags...
+  const tags = [
+    'timeline',
+    'discussion',
+    'docs',
+    'neurotech',
+    'sources'
+  ]
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -77,11 +153,10 @@ export default function Home() {
     }
 
     fetchPosts()
-    const interval = setInterval(fetchPosts, 30000) // refresh every 30s
+    const interval = setInterval(fetchPosts, 30000)
     return () => clearInterval(interval)
   }, [activeTag])
 
-  // mark as read when changing tags
   useEffect(() => {
     localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
     setUnreadTags(prev => {
@@ -100,7 +175,35 @@ export default function Home() {
     }
   }
 
-  // keeping createPost logic but adding timestamp...
+  const createPost = async () => {
+    if (!newPost.trim() || !user) return
+
+    const post = {
+      content: newPost,
+      user: user.name,
+      tags: [activeTag],
+      rotation: (Math.random() * 4 - 2),
+      timestamp: new Date().toISOString()
+    }
+
+    const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(post)
+    })
+
+    if (res.ok) {
+      setPosts(prev => [{
+        ...post,
+        id: crypto.randomUUID()
+      }, ...prev])
+      setNewPost('')
+    }
+  }
+
+  if (!user) return <NameSelector onSelect={setUser} />
+
+  const pinnedPost = pinnedPosts[activeTag]
 
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
@@ -145,7 +248,17 @@ export default function Home() {
       </div>
       
       <div className="max-w-2xl mx-auto p-8 pt-16 md:pt-8 relative">
-        {/* rest of the content... */}
+        <div className="grid gap-6">
+          {pinnedPost && (
+            <Post {...pinnedPost} />
+          )}
+
+          {posts
+            .filter(post => post.tags.includes(activeTag))
+            .map(post => (
+              <Post key={post.id} {...post} />
+            ))}
+        </div>
 
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
           <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg shadow-black/5">
