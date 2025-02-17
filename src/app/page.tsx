@@ -148,9 +148,9 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
 
 function applyThemeToImage(imageUrl: string, themeName: string): Promise<string> {
   return new Promise((resolve) => {
-    const img = new Image()
-    img.onload = () => {
-      const processed = processImage(img, themeName)
+    const img = new window.Image()
+    img.onload = async () => {
+      const processed = await processImage(img, themeName)
       resolve(processed)
     }
     img.src = imageUrl
@@ -288,12 +288,18 @@ function NameSelector({ onSelect, theme }: {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, readers = [], image, theme }: Omit<Post, 'id' | 'tags'> & { 
- theme: typeof themes[keyof typeof themes],
- currentTheme: keyof typeof themes
+function Post({ content, user, system, rotation = 0, timestamp, readers = [], image, theme, currentTheme }: Omit<Post, 'id' | 'tags'> & { 
+  theme: typeof themes[keyof typeof themes],
+  currentTheme: keyof typeof themes
 }) {
- const [processedImage, setProcessedImage] = useState(image)
- const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
+  const [processedImage, setProcessedImage] = useState<string | undefined>(image)
+  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
+
+  useEffect(() => {
+    if (image) {
+      applyThemeToImage(image, currentTheme).then(setProcessedImage)
+    }
+  }, [image])
 
  function applyThemeToImage(imageUrl: string, themeName: string): Promise<string> {
    return new Promise((resolve) => {
@@ -305,12 +311,6 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
      img.src = imageUrl
    })
  }
-
- useEffect(() => {
-   if (image) {
-     applyThemeToImage(image, currentTheme).then(setProcessedImage)
-   }
- }, [image, currentTheme])
  
  return (
    <div style={style}>
