@@ -468,7 +468,12 @@ export default function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
-      const data = await res.json() as Post[]
+      const data = await res.json()
+      if (!Array.isArray(data)) {
+        console.error('invalid api response:', data)
+        setPosts([])
+        return
+      }
       setPosts(data)
       
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
