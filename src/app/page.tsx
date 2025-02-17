@@ -195,7 +195,7 @@ function NameSelector({ onSelect, theme }: {
 function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme }: Omit<Post, 'id'> & { 
   theme: typeof themes[keyof typeof themes] 
 }) {
-  const formattedContent = content.replace(/([^\n])\n([^\n])/g, '$1  \n$2')
+  const formattedContent = content
   const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
   
   return (
