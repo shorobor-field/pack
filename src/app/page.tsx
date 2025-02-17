@@ -484,4 +484,5 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], th
         )}
       </div>
     </div>
-  )
+  </div>
+)
