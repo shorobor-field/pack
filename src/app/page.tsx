@@ -1,7 +1,8 @@
 "use client"
-import { useState, useEffect } from 'react'
-import { differenceInMinutes, differenceInHours, differenceInDays, format, isAfter, sub } from 'date-fns'
+import { useState, useEffect, useRef } from 'react'
+import { formatDistanceToNow, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
+import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil } from 'lucide-react'
 
 type User = {
   name: string
@@ -17,33 +18,7 @@ type Post = {
   system?: boolean
 }
 
-// moved out so it's not recreated on every render
-const getRotation = (id: string) => {
-  // use id to generate consistent rotation between -2 and 2
-  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  return (hash % 40) / 10 - 2
-}
-
-const formatTimeAgo = (timestamp: string) => {
-  const date = new Date(timestamp)
-  const now = new Date()
-  
-  const minutesAgo = differenceInMinutes(now, date)
-  const hoursAgo = differenceInHours(now, date)
-  const daysAgo = differenceInDays(now, date)
-  
-  if (daysAgo >= 7) {
-    return format(date, 'dd-MM-yyyy')
-  } else if (daysAgo > 0) {
-    return `${daysAgo}d ago`
-  } else if (hoursAgo > 0) {
-    return `${hoursAgo}h ago`
-  } else if (minutesAgo > 0) {
-    return `${minutesAgo}m ago`
-  } else {
-    return 'just now'
-  }
-}
+const createRotation = () => (Math.random() * 4 - 2)
 
 const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
   timeline: {
@@ -51,6 +26,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["timeline"],
     system: true,
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   discussion: {
@@ -58,6 +34,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["discussion"],
     system: true,
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   docs: {
@@ -65,6 +42,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["docs"],
     system: true,
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   neurotech: {
@@ -72,6 +50,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["neurotech"],
     system: true,
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   },
   sources: {
@@ -79,8 +58,39 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     user: "system",
     tags: ["sources"],
     system: true,
+    rotation: createRotation(),
     timestamp: new Date().toISOString()
   }
+}
+
+const tagIcons = {
+  timeline: Layout,
+  discussion: MessageSquare,
+  docs: FileText,
+  neurotech: Brain,
+  sources: Link
+}
+
+function formatPostDate(timestamp: string) {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+  
+  if (diffInDays >= 7) {
+    return format(date, 'dd-MM-yyyy')
+  }
+  
+  if (diffInDays >= 1) {
+    return `${diffInDays} days ago`
+  }
+  
+  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+  if (diffInHours >= 1) {
+    return `${diffInHours} hours ago`
+  }
+  
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+  return `${diffInMinutes} minutes ago`
 }
 
 function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
@@ -111,10 +121,7 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ id, content, user, system, timestamp }: Post) {
-  const rotation = system ? 0 : getRotation(id)
-  const timeAgo = formatTimeAgo(timestamp)
-
+function Post({ content, user, system, rotation, timestamp }: Omit<Post, 'id'>) {
   return (
     <div style={{ transform: `rotate(${rotation}deg)` }}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
@@ -126,20 +133,11 @@ function Post({ id, content, user, system, timestamp }: Post) {
             {user}
           </div>
           <div className="text-xs text-gray-600">
-            {timeAgo}
+            {formatPostDate(timestamp)}
           </div>
         </div>
-        <div className="font-mono text-gray-800 prose prose-sm max-w-none">
-          <ReactMarkdown
-            components={{
-              p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-              h1: ({ children }) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
-              h2: ({ children }) => <h2 className="text-lg font-bold mb-3">{children}</h2>,
-              h3: ({ children }) => <h3 className="text-base font-bold mb-2">{children}</h3>,
-            }}
-          >
-            {content}
-          </ReactMarkdown>
+        <div className="prose prose-sm max-w-none font-mono text-gray-800">
+          <ReactMarkdown>{content}</ReactMarkdown>
         </div>
       </div>
     </div>
@@ -153,6 +151,8 @@ export default function Home() {
   const [newPost, setNewPost] = useState('')
   const [isPreview, setIsPreview] = useState(false)
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
+  
+  const rotationRef = useRef<number>(createRotation())
 
   const tags = [
     'timeline',
@@ -195,9 +195,11 @@ export default function Home() {
   }, [activeTag])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.shiftKey) {
-      e.preventDefault()
-      createPost()
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        createPost()
+        e.preventDefault()
+      }
     }
   }
 
@@ -208,7 +210,7 @@ export default function Home() {
       content: newPost,
       user: user.name,
       tags: [activeTag],
-      timestamp: new Date().toISOString()
+      rotation: rotationRef.current
     }
 
     try {
@@ -221,8 +223,14 @@ export default function Home() {
       if (!res.ok) throw new Error('Failed to create post')
       
       const data = await res.json()
-      setPosts(prev => [data, ...prev])
+      
+      setPosts(prev => [{
+        ...data,
+        rotation: post.rotation
+      }, ...prev])
+      
       setNewPost('')
+      rotationRef.current = createRotation()
     } catch (err) {
       console.error('Error creating post:', err)
     }
@@ -231,54 +239,36 @@ export default function Home() {
   if (!user) return <NameSelector onSelect={setUser} />
 
   const pinnedPost = pinnedPosts[activeTag]
-  const pinnedPostWithId = pinnedPost ? { ...pinnedPost, id: `pinned-${activeTag}` } : null
 
   return (
     <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
-      {/* Mobile top nav */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-[#FFF4E0] p-2 shadow-lg overflow-x-auto">
-        <div className="flex space-x-2">
-          {tags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setActiveTag(tag)}
-              className={`flex items-center p-2 text-sm whitespace-nowrap transition-all ${
-                activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
-              }`}
-            >
-              {tag}
-              {unreadTags.has(tag) && (
-                <div className="ml-1 w-2 h-2 rounded-full bg-red-500"/>
-              )}
-            </button>
-          ))}
+      {/* Navigation */}
+      <div className="sticky top-0 z-50 mx-auto mb-8 max-w-2xl px-4 pt-4">
+        <div className="flex justify-center rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
+          {tags.map((tag) => {
+            const Icon = tagIcons[tag as keyof typeof tagIcons]
+            return (
+              <button
+                key={tag}
+                onClick={() => setActiveTag(tag)}
+                className={`relative mx-2 flex items-center rounded-lg p-2 transition-all hover:scale-110 ${
+                  activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'text-gray-600 hover:bg-[#FFEBC1]'
+                }`}
+              >
+                <Icon size={20} />
+                {unreadTags.has(tag) && (
+                  <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
-
-      {/* Desktop sidebar */}
-      <div className="hidden md:flex fixed left-4 top-4 flex-col space-y-2 rounded-lg bg-[#FFF4E0] p-2 shadow-lg">
-        {tags.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => setActiveTag(tag)}
-            className={`flex items-center p-2 text-sm transition-all ${
-              activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'hover:bg-[#FFEBC1]'
-            }`}
-          >
-            <span className="relative">
-              {tag}
-              {unreadTags.has(tag) && (
-                <div className="absolute -right-2 -top-1 w-2 h-2 rounded-full bg-red-500"/>
-              )}
-            </span>
-          </button>
-        ))}
-      </div>
       
-      <div className="max-w-2xl mx-auto p-8 pt-16 md:pt-8 relative">
+      <div className="mx-auto max-w-2xl p-4">
         <div className="grid gap-6">
-          {pinnedPostWithId && (
-            <Post {...pinnedPostWithId} />
+          {pinnedPost && (
+            <Post {...pinnedPost} />
           )}
 
           {posts
@@ -288,34 +278,27 @@ export default function Home() {
             ))}
         </div>
 
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg shadow-black/5">
-            <div className="flex gap-2 mb-2">
+        <div className="fixed bottom-4 left-1/2 w-full max-w-2xl -translate-x-1/2 transform px-4">
+          <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg">
+            <div className="mb-2 flex gap-2">
               <button 
                 onClick={() => setIsPreview(false)}
-                className={`text-sm ${!isPreview ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`flex items-center text-sm ${!isPreview ? 'text-gray-900' : 'text-gray-500'}`}
               >
+                <Pencil size={16} className="mr-1" />
                 edit
               </button>
               <button
                 onClick={() => setIsPreview(true)}
-                className={`text-sm ${isPreview ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`flex items-center text-sm ${isPreview ? 'text-gray-900' : 'text-gray-500'}`}
               >
+                <Eye size={16} className="mr-1" />
                 preview
               </button>
             </div>
             {isPreview ? (
-              <div className="min-h-[5rem] font-mono text-gray-800 prose prose-sm max-w-none">
-                <ReactMarkdown
-                  components={{
-                    p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-                    h1: ({ children }) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
-                    h2: ({ children }) => <h2 className="text-lg font-bold mb-3">{children}</h2>,
-                    h3: ({ children }) => <h3 className="text-base font-bold mb-2">{children}</h3>,
-                  }}
-                >
-                  {newPost}
-                </ReactMarkdown>
+              <div className="prose prose-sm min-h-[5rem] max-w-none font-mono text-gray-800">
+                <ReactMarkdown>{newPost}</ReactMarkdown>
               </div>
             ) : (
               <textarea
