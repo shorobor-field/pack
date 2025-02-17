@@ -93,6 +93,44 @@ const channelIcons: Record<string, React.ElementType> = {
   sources: Link
 }
 
+const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
+  timeline: {
+    content: "everything goes here. this is the main feed.",
+    user: "system",
+    tags: ["timeline"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  discussion: {
+    content: "general chat for anything and everything",
+    user: "system",
+    tags: ["discussion"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  docs: {
+    content: "documentation and longer form writing lives here",
+    user: "system",
+    tags: ["docs"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  neurotech: {
+    content: "discoveries about cognition and productivity",
+    user: "system",
+    tags: ["neurotech"],
+    system: true,
+    timestamp: new Date().toISOString()
+  },
+  sources: {
+    content: "interesting links and resources",
+    user: "system",
+    tags: ["sources"],
+    system: true,
+    timestamp: new Date().toISOString()
+  }
+}
+
 function formatPostDate(timestamp: string) {
   const date = new Date(timestamp)
   const now = new Date()
@@ -128,7 +166,7 @@ function NameSelector({ onSelect, theme }: {
   ]
 
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg} transition-colors duration-200`}>
       <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
         <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
@@ -263,48 +301,6 @@ export default function Home() {
   const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
 
-  const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
-    timeline: {
-      content: "everything goes here. this is the main feed.",
-      user: "system",
-      tags: ["timeline"],
-      system: true,
-      timestamp: new Date().toISOString()
-    },
-    discussion: {
-      content: "general chat for anything and everything",
-      user: "system",
-      tags: ["discussion"],
-      system: true,
-      timestamp: new Date().toISOString()
-    },
-    docs: {
-      content: "documentation and longer form writing lives here",
-      user: "system",
-      tags: ["docs"],
-      system: true,
-      timestamp: new Date().toISOString()
-    },
-    neurotech: {
-      content: "discoveries about cognition and productivity",
-      user: "system",
-      tags: ["neurotech"],
-      system: true,
-      timestamp: new Date().toISOString()
-    },
-    sources: {
-      content: "interesting links and resources",
-      user: "system",
-      tags: ["sources"],
-      system: true,
-      timestamp: new Date().toISOString()
-    }
-  }
-
-  useEffect(() => {
-    localStorage.setItem('pack-theme', currentTheme)
-  }, [currentTheme])
-
   const cycleTheme = () => {
     setCurrentTheme(current => {
       const themeOrder: (keyof typeof themes)[] = ['playful-light', 'playful-dark', 'corpo-light', 'corpo-dark']
@@ -373,6 +369,10 @@ export default function Home() {
     })
   }, [activeTag])
 
+  useEffect(() => {
+    localStorage.setItem('pack-theme', currentTheme)
+  }, [currentTheme])
+
   const createPost = async (content: string) => {
     if (!user) return
 
@@ -409,76 +409,74 @@ export default function Home() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
 
+  if (!user) return <NameSelector onSelect={setUser} theme={theme} />
+
+  const pinnedPost = pinnedPosts[activeTag]
+  const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
+
   return (
     <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
-      {!user ? (
-        <NameSelector onSelect={setUser} theme={theme} />
-      ) : (
-        <>
-          <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4 overflow-x-auto`}>
-            <div className={`flex items-center justify-between space-x-4 ${theme.nav} ${theme.rounded} 
-              ${theme.navShadow} p-2 transition-colors duration-200 min-w-max`}>
-              <div className="flex items-center space-x-4">
-                {tags.map((tag) => {
-                  const Icon = channelIcons[tag]
-                  return (
-                    <button
-                      key={tag}
-                      onClick={() => handleTagChange(tag)}
-                      className={`relative flex items-center ${theme.rounded} p-2 transition-all hover:scale-110 ${
-                        activeTag === tag ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`
-                      }`}
-                    >
-                      <Icon size={20} />
-                      {unreadTags.has(tag) && (
-                        <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-              <div className="flex items-center space-x-2">
-                <button 
-                  onClick={cycleTheme}
-                  className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
+      <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4 overflow-x-auto`}>
+        <div className={`flex items-center justify-between space-x-4 ${theme.nav} ${theme.rounded} 
+          ${theme.navShadow} p-2 transition-colors duration-200 min-w-max`}>
+          <div className="flex items-center space-x-4">
+            {tags.map((tag) => {
+              const Icon = channelIcons[tag]
+              return (
+                <button
+                  key={tag}
+                  onClick={() => handleTagChange(tag)}
+                  className={`relative flex items-center ${theme.rounded} p-2 transition-all hover:scale-110 ${
+                    activeTag === tag ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`
+                  }`}
                 >
-                  <Palette size={20} />
+                  <Icon size={20} />
+                  {unreadTags.has(tag) && (
+                    <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                  )}
                 </button>
-                <button 
-                  onClick={scrollToTop}
-                  className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-                >
-                  <ChevronUp size={20} />
-                </button>
-                <button 
-                  onClick={scrollToBottom}
-                  className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-                >
-                  <ChevronDown size={20} />
-                </button>
-              </div>
-            </div>
+              )
+            })}
           </div>
-          
-          <div className="mx-auto max-w-2xl px-4 pb-16">
-            <div className="grid gap-6">
-              {pinnedPosts[activeTag] && (
-                <Post {...pinnedPosts[activeTag]} rotation={rotations['pinned'] || 0} theme={theme} />
-              )}
-
-              {posts
-                .filter(post => post.tags.includes(activeTag))
-                .slice()
-                .reverse()
-                .map(post => (
-                  <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} />
-                ))}
-
-              <NewPostEditor onSubmit={createPost} theme={theme} />
-            </div>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={cycleTheme}
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
+            >
+              <Palette size={20} />
+            </button>
+            <button 
+              onClick={scrollToTop}
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
+            >
+              <ChevronUp size={20} />
+            </button>
+            <button 
+              onClick={scrollToBottom}
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
+            >
+              <ChevronDown size={20} />
+            </button>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+      
+      <div className="mx-auto max-w-2xl px-4 pb-16">
+        <div className="grid gap-6">
+          {pinnedPost && (
+            <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} />
+          )}
+
+          {filteredPosts
+            .slice()
+            .reverse()
+            .map(post => (
+              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} />
+            ))}
+
+          <NewPostEditor onSubmit={createPost} theme={theme} />
+        </div>
+      </div>
     </div>
   )
 }
