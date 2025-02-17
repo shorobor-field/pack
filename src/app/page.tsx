@@ -347,6 +347,9 @@ export default function Home() {
           setUnreadTags(prev => new Set([...prev, activeTag]))
         }
       }
+      
+      // Autoscroll after initial posts load
+      setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
     }
 
     fetchPosts()
