@@ -137,13 +137,14 @@ export default function Home() {
     const fetchPosts = async () => {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       const data = await res.json() as Post[]
-      setPosts(data)
+      // add empty tags array to each post since we're not using tags rn
+      const postsWithTags = data.map(post => ({ ...post, tags: [] }))
+      setPosts(postsWithTags)
       
-      // check for unreads
+      // check for unreads based on timestamp only for now
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
       if (lastRead) {
         const hasUnread = data.some(post => 
-          post.tags.includes(activeTag) && 
           new Date(post.timestamp) > new Date(lastRead)
         )
         if (hasUnread) {
@@ -254,7 +255,7 @@ export default function Home() {
           )}
 
           {posts
-            .filter(post => post.tags.includes(activeTag))
+            .filter(post => !post.system) // for now just show all non-system posts
             .map(post => (
               <Post key={post.id} {...post} />
             ))}
