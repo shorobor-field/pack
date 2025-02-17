@@ -299,19 +299,8 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
     if (image) {
       applyThemeToImage(image, currentTheme).then(setProcessedImage)
     }
-  }, [image])
+  }, [image, currentTheme])
 
- function applyThemeToImage(imageUrl: string, themeName: string): Promise<string> {
-   return new Promise((resolve) => {
-     const img = new window.Image()
-     img.onload = async () => {
-       const processed = await processImage(img, themeName)
-       resolve(processed)
-     }
-     img.src = imageUrl
-   })
- }
- 
  return (
    <div style={style}>
      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
@@ -414,7 +403,7 @@ function NewPostEditor({ onSubmit, theme, themeName }: {
     <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
       {image && (
         <div className="mb-4">
-          <img src={image} alt="" className="w-full mb-2" />
+          <Image src={image} alt="" width={800} height={600} className="w-full mb-2" />>
           <button 
             onClick={() => setImage(null)}
             className={`text-xs ${theme.textMuted} hover:${theme.text}`}
