@@ -524,6 +524,7 @@ export default function Home() {
       if (!res.ok) throw new Error('Failed to create post')
     
       const data = await res.json()
+      console.log('api response:', data)
       setPosts(prev => [data, ...prev])
     
       if (theme.rotate) {
