@@ -289,66 +289,78 @@ function NameSelector({ onSelect, theme }: {
 }
 
 function Post({ content, user, system, rotation = 0, timestamp, readers = [], image, theme }: Omit<Post, 'id' | 'tags'> & { 
-  theme: typeof themes[keyof typeof themes] 
+ theme: typeof themes[keyof typeof themes],
+ currentTheme: keyof typeof themes
 }) {
-  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
-  const [processedImage, setProcessedImage] = useState(image)
+ const [processedImage, setProcessedImage] = useState(image)
+ const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
 
-  useEffect(() => {
-    if (image) {
-      applyThemeToImage(image, currentTheme).then(setProcessedImage)
-    }
-  }, [image, currentTheme])
-  
-  return (
-    <div style={style}>
-      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
-        ${theme.cardShadow} ${theme.rounded} p-6`}>
-        {system && theme.rotate && (
-          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
-        )}
-        <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
-          <div className={`text-xs ${theme.textMuted}`}>
-            {user}
-          </div>
-          {!system && (
-            <div className={`text-xs ${theme.textMuted}`}>
-              {formatPostDate(timestamp)}
-            </div>
-          )}
-        </div>
-        
-        {processedImage && (
-          <div className="mb-4">
-            <Image 
-              src={processedImage}  
-              alt="Post image"
-              width={800}
-              height={600}
-              className="w-full"
-            />
-          </div>
-        )}
-        
-        <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} 
-            components={{ 
-              ul: (props) => <ul className="list-disc pl-5" {...props} />, 
-              ol: (props) => <ol className="list-decimal pl-5" {...props} /> 
-            }}
-          >
-            {content}
-          </ReactMarkdown>
-        </div>
-        
-        {readers.length > 0 && (
-          <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
-            read by: {readers.join(' ')}
-          </div>
-        )}
-      </div>
-    </div>
-  )
+ function applyThemeToImage(imageUrl: string, themeName: string): Promise<string> {
+   return new Promise((resolve) => {
+     const img = new window.Image()
+     img.onload = async () => {
+       const processed = await processImage(img, themeName)
+       resolve(processed)
+     }
+     img.src = imageUrl
+   })
+ }
+
+ useEffect(() => {
+   if (image) {
+     applyThemeToImage(image, currentTheme).then(setProcessedImage)
+   }
+ }, [image, currentTheme])
+ 
+ return (
+   <div style={style}>
+     <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
+       ${theme.cardShadow} ${theme.rounded} p-6`}>
+       {system && theme.rotate && (
+         <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
+       )}
+       <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
+         <div className={`text-xs ${theme.textMuted}`}>
+           {user}
+         </div>
+         {!system && (
+           <div className={`text-xs ${theme.textMuted}`}>
+             {formatPostDate(timestamp)}
+           </div>
+         )}
+       </div>
+       
+       {processedImage && (
+         <div className="mb-4">
+           <Image 
+             src={processedImage} 
+             alt="Post image"
+             width={800}
+             height={600}
+             className="w-full"
+           />
+         </div>
+       )}
+       
+       <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
+         <ReactMarkdown remarkPlugins={[remarkGfm]} 
+           components={{ 
+             ul: (props) => <ul className="list-disc pl-5" {...props} />, 
+             ol: (props) => <ol className="list-decimal pl-5" {...props} /> 
+           }}
+         >
+           {content}
+         </ReactMarkdown>
+       </div>
+       
+       {readers.length > 0 && (
+         <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
+           read by: {readers.join(' ')}
+         </div>
+       )}
+     </div>
+   </div>
+ )
 }
 
 function NewPostEditor({ onSubmit, theme, themeName }: { 
@@ -641,7 +653,7 @@ export default function Home() {
             .slice()
             .reverse()
             .map(post => (
-              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} />
+              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} currentTheme={currentTheme} />
             ))}
 
           <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} />
