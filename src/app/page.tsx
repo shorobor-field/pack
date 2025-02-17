@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, Eye, Pencil, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
 
 type User = {
   name: string
@@ -252,7 +252,7 @@ function NewPostEditor({ onSubmit, theme }: {
             value={content}
             onChange={e => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="what's on your mind..."
+            placeholder="what's on your mind?"
             className={`w-full resize-none ${theme.textArea} font-mono ${theme.text} 
               placeholder-gray-500 focus:outline-none`}
             rows={3}
