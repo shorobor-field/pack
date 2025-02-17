@@ -2,11 +2,9 @@
 import { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
+import { Hash, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send } from 'lucide-react'
 
-type User = {
-  name: string
-}
+type User = { name: string }
 
 type Post = {
   id: string
@@ -16,81 +14,15 @@ type Post = {
   timestamp: string
   rotation?: number
   system?: boolean
+  readers?: string[]
 }
 
-const themes = {
-  'playful-light': {
-    bg: 'bg-[#FFE5B4]',
-    nav: 'bg-[#FFF4E0]',
-    navShadow: 'shadow-lg shadow-[#FFE5B4]/60',
-    card: 'bg-white',
-    systemCard: 'bg-[#FFFACD]',
-    cardShadow: 'shadow-lg',
-    accent: 'bg-[#FFD580]',
-    accentHover: 'hover:bg-[#FFEBC1]',
-    border: 'border-[#FFD580]',
-    text: 'text-gray-800',
-    textMuted: 'text-gray-600',
-    rounded: 'rounded-lg',
-    textArea: 'bg-transparent',
-    rotate: true
-  },
-  'playful-dark': {
-    bg: 'bg-[#1e1e2e]', // catppuccin mocha base
-    nav: 'bg-[#181825]', // mocha mantle
-    navShadow: 'shadow-lg shadow-black/40',
-    card: 'bg-[#181825]', // mocha mantle
-    systemCard: 'bg-[#11111b]', // mocha crust
-    cardShadow: 'shadow-lg shadow-black/20',
-    accent: 'bg-[#cba6f7]', // mocha mauve
-    accentHover: 'hover:bg-[#f5c2e7]', // mocha pink
-    border: 'border-[#313244]', // mocha surface0
-    text: 'text-[#cdd6f4]', // mocha text
-    textMuted: 'text-[#9399b2]', // mocha subtext0
-    rounded: 'rounded-lg',
-    textArea: 'bg-transparent',
-    rotate: true
-  },
-  'corpo-light': {
-    bg: 'bg-gray-50',
-    nav: 'bg-white',
-    navShadow: 'shadow-lg shadow-gray-200/60',
-    card: 'bg-white',
-    systemCard: 'bg-white',
-    cardShadow: 'shadow-sm',
-    accent: 'bg-gray-100',
-    accentHover: 'hover:bg-gray-100',
-    border: 'border-gray-200',
-    text: 'text-gray-800',
-    textMuted: 'text-gray-600',
-    rounded: '',
-    textArea: 'bg-transparent',
-    rotate: false
-  },
-  'corpo-dark': {
-    bg: 'bg-[#1F1F1F]',
-    nav: 'bg-[#2A2A2A]',
-    navShadow: 'shadow-lg shadow-black/40',
-    card: 'bg-[#2A2A2A]',
-    systemCard: 'bg-[#333333]',
-    cardShadow: 'shadow-lg shadow-black/20',
-    accent: 'bg-[#3A3A3A]',
-    accentHover: 'hover:bg-[#444444]',
-    border: 'border-[#404040]',
-    text: 'text-gray-200',
-    textMuted: 'text-gray-400',
-    rounded: '',
-    textArea: 'bg-transparent',
-    rotate: false
-  }
-} as const
-
 const channelIcons: Record<string, React.ElementType> = {
-  timeline: Layout,
+  timeline: Hash,
   discussion: MessageSquare,
   docs: FileText,
   neurotech: Brain,
-  sources: Link
+  sources: LinkIcon
 }
 
 const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
@@ -143,21 +75,26 @@ function formatPostDate(timestamp: string) {
   
   if (isAfter(date, sub(now, { days: 1 }))) {
     const hours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
+    return `${hours}h ago`
   }
   
   if (isAfter(date, sub(now, { days: 7 }))) {
     const days = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`
+    return `${days}d ago`
   }
   
   return format(date, 'dd-MM-yyyy')
 }
 
-function NameSelector({ onSelect, theme }: { 
-  onSelect: (user: User) => void
-  theme: typeof themes[keyof typeof themes]
-}) {
+// regex to find urls in text
+const urlRegex = /(https?:\/\/[^\s]+)/g
+
+// convert urls to markdown links
+function linkifyText(text: string): string {
+  return text.replace(urlRegex, url => `[${url}](${url})`)
+}
+
+function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   const users = [
     { name: 'raiyan' },
     { name: 'zarin' },
@@ -166,17 +103,17 @@ function NameSelector({ onSelect, theme }: {
   ]
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg} transition-colors duration-200`}>
-      <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
-        <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
+    <div className="fixed inset-0 flex items-center justify-center bg-amber-50">
+      <div className="w-80 bg-white p-8 shadow-xl">
+        <h2 className="mb-6 text-center font-mono">who are you?</h2>
         <div className="grid grid-cols-2 gap-4">
           {users.map(user => (
             <button
               key={user.name}
               onClick={() => onSelect(user)}
-              className={`group flex items-center justify-center space-x-2 ${theme.rounded} 
-                border-2 ${theme.border} ${theme.card} p-3 ${theme.text} 
-                transition-all ${theme.accentHover}`}
+              className="group flex items-center justify-center space-x-2 border-2 
+                border-black bg-white p-3 text-black transition-all 
+                hover:-translate-y-0.5 hover:bg-black hover:text-white"
             >
               <span className="font-mono">{user.name}</span>
             </button>
@@ -187,46 +124,48 @@ function NameSelector({ onSelect, theme }: {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, theme }: Omit<Post, 'id'> & { 
-  theme: typeof themes[keyof typeof themes] 
-}) {
-  const formattedContent = content.replace(/(?!\n\n)\n(?!\n)/g, '\n\n')
-  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
+function Post({ content, user, system, rotation = 0, timestamp, readers = [], currentUser }: 
+  Omit<Post, 'id' | 'tags'> & { currentUser: string }) {
+  const [isHovered, setIsHovered] = useState(false)
+  const style = { transform: `rotate(${rotation}deg)` }
   
   return (
     <div style={style}>
-      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
-        ${theme.cardShadow} ${theme.rounded} p-6 transition-colors duration-200`}>
-        {system && theme.rotate && (
-          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
+      <div 
+        className="relative bg-white p-6 shadow-lg transition-all hover:shadow-xl"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {system && (
+          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 
+            transform rounded-full bg-red-500" />
         )}
-        <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
-          <div className={`text-xs ${theme.textMuted}`}>
-            {user}
-          </div>
+        <div className="mb-4 flex items-center justify-between border-b border-dashed border-gray-300 pb-2">
+          <div className="text-xs text-gray-500">{user}</div>
           {!system && (
-            <div className={`text-xs ${theme.textMuted}`}>
+            <div className="text-xs text-gray-500">
               {formatPostDate(timestamp)}
             </div>
           )}
         </div>
-        <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown>{formattedContent}</ReactMarkdown>
+        <div className="prose prose-sm max-w-none whitespace-pre-wrap font-mono">
+          <ReactMarkdown>{linkifyText(content)}</ReactMarkdown>
         </div>
+        {isHovered && readers.length > 0 && (
+          <div className="mt-2 text-xs text-gray-400">
+            read by: {readers.filter(r => r !== currentUser).join(' ')}
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-function NewPostEditor({ onSubmit, theme }: { 
-  onSubmit: (content: string) => void
-  theme: typeof themes[keyof typeof themes]
-}) {
+function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
   const [content, setContent] = useState('')
-  const [isPreview, setIsPreview] = useState(false)
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSubmit()
     }
@@ -239,49 +178,30 @@ function NewPostEditor({ onSubmit, theme }: {
   }
 
   return (
-    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} 
-      p-4 transition-colors duration-200`}>
-      <div className="mb-2 flex gap-2">
-        <button 
-          onClick={() => setIsPreview(false)}
-          className={`${theme.rounded} p-1 transition-all hover:scale-110 
-            ${!isPreview ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`}`}
-        >
-          <Pencil size={16} />
-        </button>
-        <button
-          onClick={() => setIsPreview(true)}
-          className={`${theme.rounded} p-1 transition-all hover:scale-110
-            ${isPreview ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`}`}
-        >
-          <Eye size={16} />
-        </button>
+    <div className="bg-white p-4 shadow-lg">
+      <div className="mb-2 prose prose-sm max-w-none font-mono">
+        <ReactMarkdown>{linkifyText(content)}</ReactMarkdown>
       </div>
-      {isPreview ? (
-        <div className={`prose prose-sm min-h-[5rem] max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
-      ) : (
+      <div className="flex items-end gap-2">
         <textarea
           value={content}
           onChange={e => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="what's on your mind..."
-          className={`w-full resize-none ${theme.textArea} font-mono ${theme.text} 
-            placeholder-gray-500 focus:outline-none`}
+          className="w-full resize-none bg-transparent font-mono 
+            placeholder-gray-500 focus:outline-none"
           rows={3}
         />
-      )}
-      <div className="mt-2 flex justify-end">
         <button 
           onClick={handleSubmit}
-          className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
+          className="shrink-0 bg-black p-2 text-white"
         >
           <Send size={16} />
         </button>
       </div>
     </div>
   )
+  
 }
 
 export default function Home() {
@@ -290,41 +210,14 @@ export default function Home() {
   const [activeTag, setActiveTag] = useState('timeline')
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
   const [rotations, setRotations] = useState<Record<string, number>>({})
-  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pack-theme')
-      return (saved as keyof typeof themes) || 'corpo-light'
-    }
-    return 'corpo-light'
-  })
+  const [isNavExpanded, setIsNavExpanded] = useState(false)
 
-  const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
 
-  const cycleTheme = () => {
-    setCurrentTheme(current => {
-      const themeOrder: (keyof typeof themes)[] = ['playful-light', 'playful-dark', 'corpo-light', 'corpo-dark']
-      const currentIndex = themeOrder.indexOf(current)
-      return themeOrder[(currentIndex + 1) % themeOrder.length]
-    })
-  }
-
   const generateRotations = (postIds: string[]) => {
-    if (!theme.rotate) return
     const newRotations: Record<string, number> = {}
     postIds.forEach(id => {
-      const range = Math.floor(Math.random() * 3)
-      let rotation
-      switch(range) {
-        case 0:
-          rotation = (Math.random() - 0.5) * 1
-          break
-        case 1:
-          rotation = (Math.random() - 0.5) * 1.6
-          break
-        default:
-          rotation = (Math.random() - 0.5) * 2
-      }
+      const rotation = (Math.random() - 0.5) * 2
       newRotations[id] = rotation
     })
     setRotations(newRotations)
@@ -332,6 +225,7 @@ export default function Home() {
 
   const handleTagChange = (tag: string) => {
     setActiveTag(tag)
+    setIsNavExpanded(false)
     const filteredPosts = posts.filter(p => p.tags.includes(tag))
     generateRotations(['pinned', ...filteredPosts.map(p => p.id)])
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
@@ -369,10 +263,6 @@ export default function Home() {
     })
   }, [activeTag])
 
-  useEffect(() => {
-    localStorage.setItem('pack-theme', currentTheme)
-  }, [currentTheme])
-
   const createPost = async (content: string) => {
     if (!user) return
 
@@ -380,7 +270,8 @@ export default function Home() {
       content,
       user: user.name,
       tags: [activeTag],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      readers: [user.name]
     }
 
     try {
@@ -394,87 +285,131 @@ export default function Home() {
       
       const data = await res.json()
       setPosts(prev => [data, ...prev])
-      
-      if (theme.rotate) {
-        setRotations(prev => ({
-          ...prev,
-          [data.id]: (Math.random() - 0.5) * 2
-        }))
-      }
+      setRotations(prev => ({
+        ...prev,
+        [data.id]: (Math.random() - 0.5) * 2
+      }))
     } catch (err) {
       console.error('Error creating post:', err)
+    }
+  }
+
+  const markAsRead = async (postId: string) => {
+    if (!user) return
+
+    try {
+      const res = await fetch(`https://pack-api.raiyanrahmanxx.workers.dev/posts/${postId}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: user.name })
+      })
+
+      if (!res.ok) throw new Error('Failed to mark as read')
+      
+      const data = await res.json()
+      setPosts(prev => prev.map(p => 
+        p.id === postId ? { ...p, readers: data.readers } : p
+      ))
+    } catch (err) {
+      console.error('Error marking as read:', err)
     }
   }
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
 
-  if (!user) return <NameSelector onSelect={setUser} theme={theme} />
+  if (!user) return <NameSelector onSelect={setUser} />
 
   const pinnedPost = pinnedPosts[activeTag]
   const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
 
   return (
-    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text} transition-colors duration-200`}>
-      <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4 overflow-x-auto`}>
-        <div className={`flex items-center justify-between space-x-4 ${theme.nav} ${theme.rounded} 
-          ${theme.navShadow} p-2 transition-colors duration-200 min-w-max`}>
-          <div className="flex items-center space-x-4">
-            {tags.map((tag) => {
-              const Icon = channelIcons[tag]
-              return (
-                <button
-                  key={tag}
-                  onClick={() => handleTagChange(tag)}
-                  className={`relative flex items-center ${theme.rounded} p-2 transition-all hover:scale-110 ${
-                    activeTag === tag ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`
-                  }`}
-                >
-                  <Icon size={20} />
-                  {unreadTags.has(tag) && (
-                    <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
-                  )}
-                </button>
-              )
-            })}
+    <div className="min-h-screen bg-amber-50 font-mono">
+      <div className="mx-auto max-w-2xl px-4 py-4">
+        {/* Channel Selector */}
+        <div 
+          className="w-full bg-white shadow-lg mb-6 overflow-hidden transition-all duration-200 cursor-pointer"
+          style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}
+          onClick={() => setIsNavExpanded(!isNavExpanded)}
+        >
+          <div className="p-3 border-b border-dashed border-gray-200 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Hash size={14} />
+              <span>{activeTag}</span>
+            </div>
+            <ChevronDown 
+              size={14}
+              className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`}
+            />
           </div>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={cycleTheme}
-              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-            >
-              <Palette size={20} />
-            </button>
-            <button 
-              onClick={scrollToTop}
-              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-            >
-              <ChevronUp size={20} />
-            </button>
-            <button 
-              onClick={scrollToBottom}
-              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
-            >
-              <ChevronDown size={20} />
-            </button>
+          
+          <div className="divide-y divide-dashed divide-gray-200">
+            {tags.map(tag => (
+              <div
+                key={tag}
+                className={`p-3 ${tag === activeTag ? 'bg-black text-white' : 'hover:bg-gray-50'}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleTagChange(tag)
+                }}
+              >
+                <div className="flex items-center space-x-2">
+                  <Hash size={14} />
+                  <span>{tag}</span>
+                  {unreadTags.has(tag) && (
+                    <div className="h-2 w-2 rounded-full bg-red-500" />
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-      
-      <div className="mx-auto max-w-2xl px-4 pb-16">
-        <div className="grid gap-6">
+
+        {/* Posts */}
+        <div className="space-y-6">
           {pinnedPost && (
-            <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} />
+            <Post 
+              {...pinnedPost} 
+              rotation={rotations['pinned'] || 0}
+              currentUser={user.name}
+              onRead={() => {}}
+            />
           )}
 
           {filteredPosts
             .slice()
             .reverse()
             .map(post => (
-              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} />
+              <div 
+                key={post.id}
+                onClick={() => !post.readers?.includes(user.name) && markAsRead(post.id)}
+              >
+                <Post 
+                  {...post} 
+                  rotation={rotations[post.id] || 0}
+                  currentUser={user.name}
+                />
+              </div>
             ))}
 
-          <NewPostEditor onSubmit={createPost} theme={theme} />
+          {/* New Post Card */}
+          <NewPostEditor onSubmit={createPost} />
+
+          {/* Scroll Buttons */}
+          <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+            <button 
+              onClick={scrollToTop}
+              className="bg-white p-2 shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <ChevronUp size={20} />
+            </button>
+            <button 
+              onClick={scrollToBottom}
+              className="bg-white p-2 shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <ChevronDown size={20} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
