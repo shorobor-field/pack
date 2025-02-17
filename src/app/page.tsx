@@ -211,7 +211,20 @@ export default function Home() {
   const generateRotations = (postIds: string[]) => {
     const newRotations: Record<string, number> = {}
     postIds.forEach(id => {
-      newRotations[id] = Math.random() * 4 - 2
+      // randomize between 3 ranges: slight (-0.5 to 0.5), medium (-0.8 to 0.8), and full (-1 to 1)
+      const range = Math.floor(Math.random() * 3)
+      let rotation
+      switch(range) {
+        case 0:
+          rotation = (Math.random() - 0.5) * 1 // -0.5 to 0.5
+          break
+        case 1:
+          rotation = (Math.random() - 0.5) * 1.6 // -0.8 to 0.8
+          break
+        default:
+          rotation = (Math.random() - 0.5) * 2 // -1 to 1
+      }
+      newRotations[id] = rotation
     })
     setRotations(newRotations)
   }
@@ -334,15 +347,18 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="mx-auto max-w-2xl px-4">
+      <div className="mx-auto max-w-2xl px-4 pb-16">
         <div className="grid gap-6">
           {pinnedPost && (
             <Post {...pinnedPost} rotation={rotations['pinned'] || 0} />
           )}
 
-          {filteredPosts.map(post => (
-            <Post key={post.id} {...post} rotation={rotations[post.id] || 0} />
-          ))}
+          {filteredPosts
+            .slice()
+            .reverse()
+            .map(post => (
+              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} />
+            ))}
 
           <NewPostEditor onSubmit={createPost} />
         </div>
