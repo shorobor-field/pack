@@ -332,7 +332,7 @@ function NewPostEditor({ onSubmit, theme }: {
     try {
       const reader = new FileReader()
       reader.onload = async (event) => {
-        const img = new Image()
+        const img = document.createElement('img')
         img.onload = async () => {
           const processed = await processImage(img)
           setImage(processed)
