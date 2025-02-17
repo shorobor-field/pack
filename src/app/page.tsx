@@ -333,9 +333,10 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
   )
 }
 
-function NewPostEditor({ onSubmit, theme }: { 
+function NewPostEditor({ onSubmit, theme, themeName }: { 
   onSubmit: (content: string, image?: string) => void
   theme: typeof themes[keyof typeof themes]
+  themeName: keyof typeof themes
 }) {
   const [content, setContent] = useState('')
   const [image, setImage] = useState<string | null>(null)
@@ -352,7 +353,7 @@ function NewPostEditor({ onSubmit, theme }: {
       reader.onload = async (event) => {
         const img = document.createElement('img')
         img.onload = async () => {
-          const processed = await processImage(img, currentTheme)
+          const processed = await processImage(img, themeName)
           setImage(processed)
           setUploading(false)
         }
@@ -625,7 +626,7 @@ export default function Home() {
               <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} />
             ))}
 
-          <NewPostEditor onSubmit={createPost} theme={theme} />
+          <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} />
           
           <div className="flex justify-end">
             <button 
