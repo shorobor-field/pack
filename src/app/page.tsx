@@ -116,7 +116,8 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
 }
 
 function Post({ content, user, system, rotation = 0, timestamp }: Omit<Post, 'id'>) {
-  const formattedContent = content.split('\n').join('\n\n')
+  // Double all newlines for markdown, but avoid doubling already doubled ones
+  const formattedContent = content.replace(/(?!\n\n)\n(?!\n)/g, '\n\n')
   return (
     <div style={{ transform: `rotate(${rotation}deg)` }}>
       <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
@@ -191,7 +192,7 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
       <div className="mt-2 flex justify-end">
         <button 
           onClick={handleSubmit}
-          className="rounded-lg p-2 text-gray-800 transition-all hover:scale-110 hover:bg-[#FFD580]"
+          className="rounded-lg bg-[#FFD580] p-2 text-gray-800 transition-all hover:scale-110"
         >
           <Send size={16} />
         </button>
