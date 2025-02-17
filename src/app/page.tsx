@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil, ChevronUp, ChevronDown, Send } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
 
 type User = {
   name: string
@@ -17,6 +17,41 @@ type Post = {
   rotation?: number
   system?: boolean
 }
+
+type Theme = 'playful-light' | 'playful-dark' | 'corpo-light' | 'corpo-dark'
+
+const themes = {
+  'playful-light': {
+    bg: 'bg-[#FFE5B4]',
+    nav: 'bg-[#FFF4E0]',
+    navShadow: 'shadow-[#FFE5B4]/60',
+    card: 'bg-white',
+    systemCard: 'bg-[#FFFACD]',
+    cardShadow: 'shadow-lg',
+    accent: 'bg-[#FFD580]',
+    accentHover: 'hover:bg-[#FFEBC1]',
+    border: 'border-[#FFD580]',
+    text: 'text-gray-800',
+    textMuted: 'text-gray-600',
+    rounded: 'rounded-lg',
+    rotate: true
+  },
+  'corpo-light': {
+    bg: 'bg-gray-50',
+    nav: 'bg-white',
+    navShadow: 'shadow-sm',
+    card: 'bg-white',
+    systemCard: 'bg-white',
+    cardShadow: 'shadow-sm',
+    accent: 'bg-gray-100',
+    accentHover: 'hover:bg-gray-100',
+    border: 'border-gray-200',
+    text: 'text-gray-800',
+    textMuted: 'text-gray-600',
+    rounded: '',
+    rotate: false
+  }
+} as const
 
 const channelIcons: Record<string, React.ElementType> = {
   timeline: Layout,
@@ -115,26 +150,27 @@ function NameSelector({ onSelect }: { onSelect: (user: User) => void }) {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp }: Omit<Post, 'id'>) {
-  // Double all newlines for markdown, but avoid doubling already doubled ones
+function Post({ content, user, system, rotation = 0, timestamp, theme }: Omit<Post, 'id'> & { theme: typeof themes[keyof typeof themes] }) {
   const formattedContent = content.replace(/(?!\n\n)\n(?!\n)/g, '\n\n')
+  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
+  
   return (
-    <div style={{ transform: `rotate(${rotation}deg)` }}>
-      <div className={`relative rounded-lg p-6 shadow-lg ${system ? 'bg-[#FFFACD]' : 'bg-white'}`}>
-        {system && (
+    <div style={style}>
+      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} ${theme.cardShadow} ${theme.rounded} p-6`}>
+        {system && theme.rotate && (
           <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
         )}
-        <div className="mb-4 flex items-center justify-between border-b border-dashed border-[#FFD580] pb-2">
-          <div className="text-xs text-gray-600">
+        <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
+          <div className={`text-xs ${theme.textMuted}`}>
             {user}
           </div>
           {!system && (
-            <div className="text-xs text-gray-600">
+            <div className={`text-xs ${theme.textMuted}`}>
               {formatPostDate(timestamp)}
             </div>
           )}
         </div>
-        <div className="prose prose-sm max-w-none font-mono text-gray-800">
+        <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
           <ReactMarkdown>{formattedContent}</ReactMarkdown>
         </div>
       </div>
@@ -142,7 +178,7 @@ function Post({ content, user, system, rotation = 0, timestamp }: Omit<Post, 'id
   )
 }
 
-function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
+function NewPostEditor({ onSubmit, theme }: { onSubmit: (content: string) => void, theme: typeof themes[keyof typeof themes] }) {
   const [content, setContent] = useState('')
   const [isPreview, setIsPreview] = useState(false)
 
@@ -160,23 +196,25 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
   }
 
   return (
-    <div className="rounded-lg bg-[#FFF4E0] p-4 shadow-lg shadow-[#FFE5B4]">
+    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
       <div className="mb-2 flex gap-2">
         <button 
           onClick={() => setIsPreview(false)}
-          className={`rounded p-1 transition-all hover:scale-110 ${!isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
+          className={`${theme.rounded} p-1 transition-all hover:scale-110 
+            ${!isPreview ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`}`}
         >
           <Pencil size={16} />
         </button>
         <button
           onClick={() => setIsPreview(true)}
-          className={`rounded p-1 transition-all hover:scale-110 ${isPreview ? 'bg-[#FFD580] text-gray-900' : 'text-gray-500 hover:bg-[#FFEBC1]'}`}
+          className={`${theme.rounded} p-1 transition-all hover:scale-110
+            ${isPreview ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`}`}
         >
           <Eye size={16} />
         </button>
       </div>
       {isPreview ? (
-        <div className="prose prose-sm min-h-[5rem] max-w-none font-mono text-gray-800">
+        <div className={`prose prose-sm min-h-[5rem] max-w-none font-mono ${theme.text}`}>
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
       ) : (
@@ -185,14 +223,14 @@ function NewPostEditor({ onSubmit }: { onSubmit: (content: string) => void }) {
           onChange={e => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="what's on your mind..."
-          className="w-full resize-none bg-transparent font-mono text-gray-800 placeholder-gray-500 focus:outline-none"
+          className={`w-full resize-none bg-transparent font-mono ${theme.text} placeholder-gray-500 focus:outline-none`}
           rows={3}
         />
       )}
       <div className="mt-2 flex justify-end">
         <button 
           onClick={handleSubmit}
-          className="rounded-lg bg-[#FFD580] p-2 text-gray-800 transition-all hover:scale-110"
+          className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
         >
           <Send size={16} />
         </button>
@@ -207,24 +245,30 @@ export default function Home() {
   const [activeTag, setActiveTag] = useState('timeline')
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
   const [rotations, setRotations] = useState<Record<string, number>>({})
+  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>('playful-light')
 
+  const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
 
+  const toggleTheme = () => {
+    setCurrentTheme(current => current === 'playful-light' ? 'corpo-light' : 'playful-light')
+  }
+
   const generateRotations = (postIds: string[]) => {
+    if (!theme.rotate) return
     const newRotations: Record<string, number> = {}
     postIds.forEach(id => {
-      // randomize between 3 ranges: slight (-0.5 to 0.5), medium (-0.8 to 0.8), and full (-1 to 1)
       const range = Math.floor(Math.random() * 3)
       let rotation
       switch(range) {
         case 0:
-          rotation = (Math.random() - 0.5) * 1 // -0.5 to 0.5
+          rotation = (Math.random() - 0.5) * 1
           break
         case 1:
-          rotation = (Math.random() - 0.5) * 1.6 // -0.8 to 0.8
+          rotation = (Math.random() - 0.5) * 1.6
           break
         default:
-          rotation = (Math.random() - 0.5) * 2 // -1 to 1
+          rotation = (Math.random() - 0.5) * 2
       }
       newRotations[id] = rotation
     })
@@ -234,7 +278,6 @@ export default function Home() {
   const handleTagChange = (tag: string) => {
     setActiveTag(tag)
     generateRotations(['pinned', ...posts.filter(p => p.tags.includes(tag)).map(p => p.id)])
-    // scroll to bottom after a brief delay to allow for render
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
 
@@ -243,7 +286,6 @@ export default function Home() {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       const data = await res.json() as Post[]
       setPosts(data)
-      // Generate initial rotations
       generateRotations(['pinned', ...data.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
       
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
@@ -261,7 +303,7 @@ export default function Home() {
     fetchPosts()
     const interval = setInterval(fetchPosts, 30000)
     return () => clearInterval(interval)
-  }, []) // removed activeTag dependency
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
@@ -294,11 +336,12 @@ export default function Home() {
       const data = await res.json()
       setPosts(prev => [data, ...prev])
       
-      // Add rotation for new post
-      setRotations(prev => ({
-        ...prev,
-        [data.id]: Math.random() * 4 - 2
-      }))
+      if (theme.rotate) {
+        setRotations(prev => ({
+          ...prev,
+          [data.id]: Math.random() * 4 - 2
+        }))
+      }
     } catch (err) {
       console.error('Error creating post:', err)
     }
@@ -313,9 +356,9 @@ export default function Home() {
   const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
 
   return (
-    <div className="min-h-screen bg-[#FFE5B4] font-mono text-gray-800">
-      <div className="sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4">
-        <div className="flex items-center justify-between space-x-4 rounded-lg bg-[#FFF4E0] p-2 shadow-lg shadow-[#FFE5B4]/60">
+    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text}`}>
+      <div className={`sticky top-0 z-10 mx-auto mb-8 max-w-2xl px-4 pt-4`}>
+        <div className={`flex items-center justify-between space-x-4 ${theme.nav} ${theme.rounded} ${theme.navShadow} p-2`}>
           <div className="flex items-center space-x-4">
             {tags.map((tag) => {
               const Icon = channelIcons[tag]
@@ -323,8 +366,8 @@ export default function Home() {
                 <button
                   key={tag}
                   onClick={() => handleTagChange(tag)}
-                  className={`relative flex items-center rounded-lg p-2 transition-all hover:scale-110 ${
-                    activeTag === tag ? 'bg-[#FFD580] text-gray-900' : 'text-gray-600 hover:bg-[#FFEBC1]'
+                  className={`relative flex items-center ${theme.rounded} p-2 transition-all hover:scale-110 ${
+                    activeTag === tag ? `${theme.accent} ${theme.text}` : `${theme.textMuted} ${theme.accentHover}`
                   }`}
                 >
                   <Icon size={20} />
@@ -337,14 +380,20 @@ export default function Home() {
           </div>
           <div className="flex items-center space-x-2">
             <button 
+              onClick={toggleTheme}
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
+            >
+              <Palette size={20} />
+            </button>
+            <button 
               onClick={scrollToTop}
-              className="rounded-lg p-2 text-gray-600 transition-all hover:scale-110 hover:bg-[#FFEBC1]"
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
             >
               <ChevronUp size={20} />
             </button>
             <button 
               onClick={scrollToBottom}
-              className="rounded-lg p-2 text-gray-600 transition-all hover:scale-110 hover:bg-[#FFEBC1]"
+              className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}
             >
               <ChevronDown size={20} />
             </button>
@@ -355,17 +404,17 @@ export default function Home() {
       <div className="mx-auto max-w-2xl px-4 pb-16">
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post {...pinnedPost} rotation={rotations['pinned'] || 0} />
+            <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} />
           )}
 
           {filteredPosts
             .slice()
             .reverse()
             .map(post => (
-              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} />
+              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} />
             ))}
 
-          <NewPostEditor onSubmit={createPost} />
+          <NewPostEditor onSubmit={createPost} theme={theme} />
         </div>
       </div>
     </div>
