@@ -232,6 +232,8 @@ export default function Home() {
   const handleTagChange = (tag: string) => {
     setActiveTag(tag)
     generateRotations(['pinned', ...posts.filter(p => p.tags.includes(tag)).map(p => p.id)])
+    // scroll to bottom after a brief delay to allow for render
+    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
 
   useEffect(() => {
@@ -239,7 +241,6 @@ export default function Home() {
       const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/posts')
       const data = await res.json() as Post[]
       setPosts(data)
-      generateRotations(['pinned', ...data.filter(p => p.tags.includes(activeTag)).map(p => p.id)])
       
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
       if (lastRead) {
@@ -256,7 +257,7 @@ export default function Home() {
     fetchPosts()
     const interval = setInterval(fetchPosts, 30000)
     return () => clearInterval(interval)
-  }, [activeTag])
+  }, []) // removed activeTag dependency
 
   useEffect(() => {
     localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
