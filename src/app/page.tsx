@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link, Eye, Pencil, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, Eye, Pencil, ChevronUp, ChevronDown, Send, Palette } from 'lucide-react'
 
 type User = {
   name: string
@@ -91,7 +91,7 @@ const channelIcons: Record<string, React.ElementType> = {
   discussion: MessageSquare,
   docs: FileText,
   neurotech: Brain,
-  sources: Link
+  sources: LinkIcon
 }
 
 const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
@@ -183,6 +183,42 @@ function NameSelector({ onSelect, theme }: {
             </button>
           ))}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme }: Omit<Post, 'id'> & { 
+  theme: typeof themes[keyof typeof themes] 
+}) {
+  const formattedContent = content.replace(/(?!\n\n)\n(?!\n)/g, '  \n')
+  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
+  
+  return (
+    <div style={style}>
+      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
+        ${theme.cardShadow} ${theme.rounded} p-6 transition-colors duration-200`}>
+        {system && theme.rotate && (
+          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
+        )}
+        <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
+          <div className={`text-xs ${theme.textMuted}`}>
+            {user}
+          </div>
+          {!system && (
+            <div className={`text-xs ${theme.textMuted}`}>
+              {formatPostDate(timestamp)}
+            </div>
+          )}
+        </div>
+        <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
+          <ReactMarkdown>{formattedContent}</ReactMarkdown>
+        </div>
+        {readers.length > 0 && (
+          <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
+            read by: {readers.join(' ')}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -383,6 +419,7 @@ export default function Home() {
               onClick={() => setIsNavExpanded(!isNavExpanded)}
             >
               <div className="flex items-center space-x-2">
+                {React.createElement(channelIcons[activeTag], { size: 14, className: 'mr-2' })}
                 <span className={theme.text}>{activeTag}</span>
               </div>
               <ChevronDown 
@@ -401,6 +438,9 @@ export default function Home() {
                   <div className="flex items-center space-x-2">
                     {React.createElement(channelIcons[tag], { size: 14 })}
                     <span>{tag}</span>
+                    {unreadTags.has(tag) && (
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -450,39 +490,3 @@ export default function Home() {
     </div>
   )
 }
-
-function Post({ content, user, system, rotation = 0, timestamp, readers = [], theme }: Omit<Post, 'id'> & { 
-  theme: typeof themes[keyof typeof themes] 
-}) {
-  const formattedContent = content.replace(/(?!\n\n)\n(?!\n)/g, '  \n')
-  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
-  
-  return (
-    <div style={style}>
-      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
-        ${theme.cardShadow} ${theme.rounded} p-6 transition-colors duration-200`}>
-        {system && theme.rotate && (
-          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
-        )}
-        <div className={`mb-4 flex items-center justify-between border-b border-dashed ${theme.border} pb-2`}>
-          <div className={`text-xs ${theme.textMuted}`}>
-            {user}
-          </div>
-          {!system && (
-            <div className={`text-xs ${theme.textMuted}`}>
-              {formatPostDate(timestamp)}
-            </div>
-          )}
-        </div>
-        <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
-          <ReactMarkdown>{formattedContent}</ReactMarkdown>
-        </div>
-        {readers.length > 0 && (
-          <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
-            read by: {readers.join(' ')}
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-)
