@@ -350,7 +350,7 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
  )
 }
 
-function NewPostEditor({ onSubmit, theme, themeName }: { 
+function NewPostEditor({ onSubmit, theme, themeName, user }: { 
   onSubmit: (content: string, image?: string) => void
   theme: typeof themes[keyof typeof themes]
   themeName: keyof typeof themes
