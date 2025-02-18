@@ -311,13 +311,6 @@ function Post({
  currentUser?: User | null,
  id: string
 }) {
-  console.log({
-    system,
-    postUser: user,
-    currentUser: currentUser?.name,
-    readers,
-    shouldShow: !system && user !== currentUser?.name && currentUser?.name && !readers.includes(currentUser.name)
-  })
  const [processedImage, setProcessedImage] = useState<string | undefined>(image)
  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
 
@@ -370,7 +363,7 @@ function Post({
        
        {readers.length > 0 && (
          <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
-           read by: {readers.join(', ')}
+           read by {readers.join(', ')}
          </div>
        )}
        
