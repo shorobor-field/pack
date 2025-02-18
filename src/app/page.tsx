@@ -484,6 +484,18 @@ export default function Home() {
   const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
 
+
+  useEffect(() => {
+    // get current theme bg color
+    const bgColor = theme.bg.includes('amber') ? '#FFE5B4' : 
+                    theme.bg.includes('[#1e1e2e]') ? '#1e1e2e' :
+                    theme.bg.includes('gray-50') ? '#F9FAFB' :
+                    theme.bg.includes('[#1F1F1F]') ? '#1F1F1F' : '#ffffff'
+
+    // update document bg color
+    document.documentElement.style.backgroundColor = bgColor
+  }, [currentTheme])
+  
   const cycleTheme = () => {
     setCurrentTheme(current => {
       const themeOrder: (keyof typeof themes)[] = ['playful-light', 'playful-dark', 'corpo-light', 'corpo-dark']
