@@ -362,7 +362,7 @@ function Post({
          </div>
        )}
        
-       {!system && user !== currentUser?.name && !readers.includes(currentUser?.name) && (
+       {!system && user !== currentUser?.name && currentUser?.name && !readers.includes(currentUser.name) && (
          <div className="mt-4 flex justify-end">
            <button
              onClick={() => onRead?.(id)}
