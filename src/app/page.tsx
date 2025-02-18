@@ -423,7 +423,7 @@ function NewPostEditor({ onSubmit, theme, themeName }: {
             value={content}
             onChange={e => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="what's on your mind?"
+            placeholder={`what's on your mind, ${user.name}?`}
             className={`w-full resize-none ${theme.textArea} font-mono ${theme.text} 
               placeholder-gray-500 focus:outline-none`}
             rows={3}
