@@ -456,6 +456,35 @@ function NewPostEditor({ onSubmit, theme, themeName, user }: {
             value={content}
             onChange={e => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={async (e) => {
+              const items = Array.from(e.clipboardData.items)
+              const imageItem = items.find(item => item.type.startsWith('image'))
+    
+              if (imageItem) {
+                e.preventDefault()
+                setUploading(true)
+      
+                try {
+                  const file = imageItem.getAsFile()
+                  if (!file) return
+        
+                  const reader = new FileReader()
+                  reader.onload = async (event) => {
+                    const img = document.createElement('img')
+                    img.onload = async () => {
+                      const processed = await processImage(img, themeName)
+                      setImage(processed)
+                      setUploading(false)
+                    }
+                    img.src = event.target?.result as string
+                  }
+                  reader.readAsDataURL(file)
+                } catch (err) {
+                  console.error('Error processing pasted image:', err)
+                  setUploading(false)
+                }
+              }
+            }}
             placeholder={`what's on your mind, ${user.name}?`}
             className={`w-full resize-none ${theme.textArea} font-mono ${theme.text} 
               placeholder-gray-500 focus:outline-none`}
