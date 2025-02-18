@@ -471,12 +471,13 @@ export default function Home() {
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const [isNavExpanded, setIsNavExpanded] = useState(false)
-  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>(() => {
-    
+  
+  const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>('corpo-light')
+
   useEffect(() => {
     const saved = localStorage.getItem('pack-theme')
-    if (saved) {
-      setCurrentTheme(saved as keyof typeof themes)
+    if (saved && (saved === 'playful-light' || saved === 'playful-dark' || saved === 'corpo-light' || saved === 'corpo-dark')) {
+      setCurrentTheme(saved)
     }
   }, [])
 
