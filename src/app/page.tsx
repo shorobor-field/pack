@@ -472,12 +472,13 @@ export default function Home() {
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const [isNavExpanded, setIsNavExpanded] = useState(false)
   const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pack-theme')
-      return (saved as keyof typeof themes) || 'corpo-light'
+    
+  useEffect(() => {
+    const saved = localStorage.getItem('pack-theme')
+    if (saved) {
+      setCurrentTheme(saved as keyof typeof themes)
     }
-    return 'corpo-light'
-  })
+  }, [])
 
   const theme = themes[currentTheme]
   const tags = Object.keys(channelIcons)
