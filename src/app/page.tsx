@@ -108,8 +108,9 @@ const channelIcons: Record<string, React.ElementType> = {
   sources: LinkIcon
 }
 
-const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
+const pinnedPosts: Record<string, Post> = {
   timeline: {
+    id: 'pinned-timeline',
     content: "everything goes here. this is the main feed.",
     user: "system",
     tags: ["timeline"],
@@ -117,6 +118,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     timestamp: new Date().toISOString()
   },
   discussion: {
+    id: 'pinned-discussion',
     content: "general chat for anything and everything",
     user: "system",
     tags: ["discussion"],
@@ -124,6 +126,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     timestamp: new Date().toISOString()
   },
   docs: {
+    id: 'pinned-docs',
     content: "documentation and longer form writing lives here",
     user: "system",
     tags: ["docs"],
@@ -131,6 +134,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     timestamp: new Date().toISOString()
   },
   neurotech: {
+    id: 'pinned-neurotech',
     content: "discoveries about cognition and productivity",
     user: "system",
     tags: ["neurotech"],
@@ -138,6 +142,7 @@ const pinnedPosts: Record<string, Omit<Post, 'id'>> = {
     timestamp: new Date().toISOString()
   },
   sources: {
+    id: 'pinned-sources',
     content: "interesting links and resources",
     user: "system",
     tags: ["sources"],
@@ -730,7 +735,14 @@ const handleRead = async (postId: string) => {
       </div>
       <div className="grid gap-6">
         {pinnedPost && (
-          <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} currentTheme={currentTheme} />
+          <Post 
+            {...pinnedPost} 
+            rotation={rotations['pinned'] || 0} 
+            theme={theme} 
+            currentTheme={currentTheme}
+            currentUser={user}
+            onRead={handleRead}
+          />
         )}
         {filteredPosts.slice().reverse().map(post => (
           <Post 
@@ -739,8 +751,8 @@ const handleRead = async (postId: string) => {
             rotation={rotations[post.id] || 0} 
             theme={theme} 
             currentTheme={currentTheme}
-            onRead={handleRead}
             currentUser={user}
+            onRead={handleRead}
           />
         ))}
         <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} user={user} />
@@ -810,9 +822,15 @@ const handleRead = async (postId: string) => {
         
         <div className="grid gap-6">
           {pinnedPost && (
-            <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} currentTheme={currentTheme} />
+            <Post 
+              {...pinnedPost} 
+              rotation={rotations['pinned'] || 0} 
+              theme={theme} 
+              currentTheme={currentTheme}
+              currentUser={user}
+              onRead={handleRead}
+            />
           )}
-
           {filteredPosts
             .slice()
             .reverse()
