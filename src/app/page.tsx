@@ -465,7 +465,11 @@ function NewPostEditor({ onSubmit, theme, themeName }: {
 }
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null
+    const saved = localStorage.getItem('pack-user')
+    return saved ? JSON.parse(saved) : null
+  })
   const [posts, setPosts] = useState<Post[]>([])
   const [activeTag, setActiveTag] = useState('timeline')
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
@@ -660,7 +664,10 @@ export default function Home() {
     </div>
   ) : (
     <div className="mx-auto max-w-2xl px-4 py-4">
-      <NameSelector onSelect={setUser} theme={theme} />
+      <NameSelector onSelect={(selectedUser: User) => {
+        setUser(selectedUser)
+        localStorage.setItem('pack-user', JSON.stringify(selectedUser))
+      }} theme={theme} />
     </div>
   )
 
