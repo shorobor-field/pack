@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image as LucideImage } from 'lucide-react'
+import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image as LucideImage, BookOpen } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import Image from 'next/image'
 
@@ -286,18 +286,34 @@ function NameSelector({ onSelect, theme }: {
   )
 }
 
-function Post({ content, user, system, rotation = 0, timestamp, readers = [], image, theme, currentTheme }: Omit<Post, 'id' | 'tags'> & { 
-  theme: typeof themes[keyof typeof themes],
-  currentTheme: keyof typeof themes
+function Post({ 
+ content, 
+ user, 
+ system, 
+ rotation = 0, 
+ timestamp, 
+ readers = [], 
+ image, 
+ theme, 
+ currentTheme,
+ onRead,
+ currentUser,
+ id 
+}: Omit<Post, 'tags'> & { 
+ theme: typeof themes[keyof typeof themes],
+ currentTheme: keyof typeof themes,
+ onRead?: (id: string) => void,
+ currentUser?: User | null,
+ id: string
 }) {
-  const [processedImage, setProcessedImage] = useState<string | undefined>(image)
-  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
+ const [processedImage, setProcessedImage] = useState<string | undefined>(image)
+ const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
 
-  useEffect(() => {
-    if (image) {
-      applyThemeToImage(image, currentTheme).then(setProcessedImage)
-    }
-  }, [image, currentTheme])
+ useEffect(() => {
+   if (image) {
+     applyThemeToImage(image, currentTheme).then(setProcessedImage)
+   }
+ }, [image, currentTheme])
 
  return (
    <div style={style}>
@@ -342,7 +358,18 @@ function Post({ content, user, system, rotation = 0, timestamp, readers = [], im
        
        {readers.length > 0 && (
          <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
-           read by: {readers.join(' ')}
+           read by: {readers.join(', ')}
+         </div>
+       )}
+       
+       {!system && user !== currentUser?.name && !readers.includes(currentUser?.name) && (
+         <div className="mt-4 flex justify-end">
+           <button
+             onClick={() => onRead?.(id)}
+             className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
+           >
+             <BookOpen size={16} />
+           </button>
          </div>
        )}
      </div>
@@ -568,6 +595,59 @@ export default function Home() {
     localStorage.setItem('pack-theme', currentTheme)
   }, [currentTheme])
 
+const handleRead = async (postId: string) => {
+    if (!user) return
+
+    // optimistic update
+    setPosts(prev => prev.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          readers: [...(post.readers || []), user.name].sort()
+        }
+      }
+      return post
+    }))
+
+    try {
+      const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          post_id: postId,
+          reader: user.name
+        })
+      })
+
+      if (!res.ok) throw new Error('Failed to mark as read')
+      
+      const { readers } = await res.json()
+      
+      // update with server response
+      setPosts(prev => prev.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            readers
+          }
+        }
+        return post
+      }))
+    } catch (err) {
+      console.error('Error marking as read:', err)
+      // revert optimistic update on error
+      setPosts(prev => prev.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            readers: post.readers.filter(r => r !== user.name)
+          }
+        }
+        return post
+      }))
+    }
+  }
+
   const createPost = async (content: string, image?: string) => {
     if (!user) return
 
@@ -653,7 +733,15 @@ export default function Home() {
           <Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} currentTheme={currentTheme} />
         )}
         {filteredPosts.slice().reverse().map(post => (
-          <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} currentTheme={currentTheme} />
+          <Post 
+            key={post.id} 
+            {...post} 
+            rotation={rotations[post.id] || 0} 
+            theme={theme} 
+            currentTheme={currentTheme}
+            onRead={handleRead}
+            currentUser={user}
+          />
         ))}
         <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} user={user} />
         <div className="flex justify-end">
@@ -729,7 +817,15 @@ export default function Home() {
             .slice()
             .reverse()
             .map(post => (
-              <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} currentTheme={currentTheme} />
+              <Post 
+                key={post.id} 
+                {...post} 
+                rotation={rotations[post.id] || 0} 
+                theme={theme} 
+                currentTheme={currentTheme}
+                onRead={handleRead}
+                currentUser={user}
+              />
             ))}
 
           {user ? (
