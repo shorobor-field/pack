@@ -732,7 +732,14 @@ export default function Home() {
               <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} currentTheme={currentTheme} />
             ))}
 
-          {user && <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} user={user} />}
+          {user ? (
+            <NewPostEditor 
+              onSubmit={createPost} 
+              theme={theme} 
+              themeName={currentTheme} 
+              user={user as User} 
+            />
+          ) : null}
           
           <div className="flex justify-end">
             <button 
