@@ -92,7 +92,7 @@ const themes = {
 const getThemeColors = (themeName: string) => {
   switch (themeName) {
     case 'playful-light':
-      return { dark: [255, 0, 0], light: [255, 255, 255] }  // #FFD580
+      return { dark: [237, 170, 36], light: [255, 255, 255] }  // #FFD580
     case 'playful-dark':
       return { dark: [0, 0, 0], light: [203, 166, 247] }  // #cba6f7
     default:
