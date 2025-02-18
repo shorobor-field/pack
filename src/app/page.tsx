@@ -250,6 +250,7 @@ function formatPostDate(timestamp: string) {
   return format(date, 'dd-MM-yyyy')
 }
 
+// replace the current NameSelector with this
 function NameSelector({ onSelect, theme }: { 
   onSelect: (user: User) => void
   theme: typeof themes[keyof typeof themes]
@@ -261,28 +262,25 @@ function NameSelector({ onSelect, theme }: {
     { name: 'inan' }
   ]
 
-  const handleSelect = (user: User) => {
-    onSelect(user)
-    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
-  }
-
   return (
-    <div className={`fixed inset-0 flex items-center justify-center ${theme.bg}`}>
-      <div className={`w-80 ${theme.rounded} ${theme.nav} ${theme.cardShadow} p-8`}>
-        <h2 className={`mb-6 text-center font-mono ${theme.text}`}>who are you?</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {users.map(user => (
-            <button
-              key={user.name}
-              onClick={() => handleSelect(user)}
-              className={`group flex items-center justify-center space-x-2 ${theme.rounded} 
-                border-2 ${theme.border} ${theme.card} p-3 ${theme.text} 
-                transition-all ${theme.accentHover}`}
-            >
-              <span className="font-mono">{user.name}</span>
-            </button>
-          ))}
-        </div>
+    <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-6`}>
+      <div className={`mb-4 border-b border-dashed ${theme.border} pb-2`}>
+        <div className={`text-xs ${theme.textMuted}`}>system</div>
+      </div>
+      <div className={`prose prose-sm max-w-none font-mono ${theme.text} mb-4`}>
+        who are you?
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {users.map(user => (
+          <button
+            key={user.name}
+            onClick={() => onSelect(user)}
+            className={`${theme.rounded} border ${theme.border} ${theme.card} 
+              p-2 ${theme.text} transition-all ${theme.accentHover}`}
+          >
+            <span className="font-mono">{user.name}</span>
+          </button>
+        ))}
       </div>
     </div>
   )
@@ -603,7 +601,7 @@ export default function Home() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
 
-  if (!user) return <NameSelector onSelect={setUser} theme={theme} />
+  const content = user ? (<div className="mx-auto max-w-2xl px-4 py-4"><div className="mb-6 flex items-center justify-between"><div className={`flex-grow ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`} style={{ maxHeight: isNavExpanded ? '300px' : '48px' }}><div className={`flex items-center justify-between p-3 cursor-pointer ${theme.border} border-b border-dashed`} onClick={() => setIsNavExpanded(!isNavExpanded)}><div className="flex items-center space-x-2">{React.createElement(channelIcons[activeTag], { size: 14, className: 'mr-2' })}<span className={theme.text}>{activeTag}</span></div><ChevronDown size={14} className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`} /></div><div className="divide-y divide-dashed">{tags.map(tag => (<div key={tag} className={`p-3 cursor-pointer ${tag === activeTag ? `${theme.accent} ${theme.text}` : theme.textMuted}`} onClick={() => handleTagChange(tag)}><div className="flex items-center space-x-2">{React.createElement(channelIcons[tag], { size: 14 })}<span>{tag}</span>{unreadTags.has(tag) && (<div className="h-2 w-2 rounded-full bg-red-500" />)}</div></div>))}</div></div><div className="flex items-center space-x-2 ml-4"><button onClick={cycleTheme} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}><Palette size={20} /></button><button onClick={scrollToBottom} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}><ChevronDown size={20} /></button></div></div><div className="grid gap-6">{pinnedPost && (<Post {...pinnedPost} rotation={rotations['pinned'] || 0} theme={theme} currentTheme={currentTheme} />)}{filteredPosts.slice().reverse().map(post => (<Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} currentTheme={currentTheme} />))}<NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} /><div className="flex justify-end"><button onClick={scrollToTop} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}><ChevronUp size={20} /></button></div></div></div>) : (<div className="mx-auto max-w-2xl px-4 py-4"><NameSelector onSelect={setUser} theme={theme} /></div>); return (<div className={`min-h-screen ${theme.bg} font-mono ${theme.text}`}>{content}</div>);
 
   const pinnedPost = pinnedPosts[activeTag]
   const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
