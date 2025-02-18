@@ -596,57 +596,57 @@ export default function Home() {
   }, [currentTheme])
 
 const handleRead = async (postId: string) => {
-    if (!user) return
+  if (!user) return
 
-    // optimistic update
+  // optimistic update
+  setPosts(prev => prev.map(post => {
+    if (post.id === postId) {
+      return {
+        ...post,
+        readers: [...(post.readers || []), user.name].sort()
+      }
+    }
+    return post
+  }))
+
+  try {
+    const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        post_id: postId,
+        reader: user.name
+      })
+    })
+
+    if (!res.ok) throw new Error('Failed to mark as read')
+    
+    const { readers } = await res.json()
+    
+    // update with server response
     setPosts(prev => prev.map(post => {
       if (post.id === postId) {
         return {
           ...post,
-          readers: [...(post.readers || []), user.name].sort()
+          readers
         }
       }
       return post
     }))
-
-    try {
-      const res = await fetch('https://pack-api.raiyanrahmanxx.workers.dev/read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          post_id: postId,
-          reader: user.name
-        })
-      })
-
-      if (!res.ok) throw new Error('Failed to mark as read')
-      
-      const { readers } = await res.json()
-      
-      // update with server response
-      setPosts(prev => prev.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            readers
-          }
+  } catch (err) {
+    console.error('Error marking as read:', err)
+    // revert optimistic update on error
+    setPosts(prev => prev.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          readers: (post.readers || []).filter(r => r !== user.name)
         }
-        return post
-      }))
-    } catch (err) {
-      console.error('Error marking as read:', err)
-      // revert optimistic update on error
-      setPosts(prev => prev.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            readers: post.readers.filter(r => r !== user.name)
-          }
-        }
-        return post
-      }))
-    }
+      }
+      return post
+    }))
   }
+}
 
   const createPost = async (content: string, image?: string) => {
     if (!user) return
