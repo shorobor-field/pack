@@ -263,7 +263,7 @@ function NameSelector({ onSelect, theme }: {
 
   const handleSelect = (user: User) => {
     onSelect(user)
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
 
   return (
@@ -518,7 +518,6 @@ export default function Home() {
     setIsNavExpanded(false)
     const filteredPosts = posts.filter(p => p.tags.includes(tag))
     generateRotations(['pinned', ...filteredPosts.map(p => p.id)])
-    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
 
   useEffect(() => {
