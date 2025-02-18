@@ -354,6 +354,7 @@ function NewPostEditor({ onSubmit, theme, themeName }: {
   onSubmit: (content: string, image?: string) => void
   theme: typeof themes[keyof typeof themes]
   themeName: keyof typeof themes
+  user: User
 }) {
   const [content, setContent] = useState('')
   const [image, setImage] = useState<string | null>(null)
@@ -654,7 +655,7 @@ export default function Home() {
         {filteredPosts.slice().reverse().map(post => (
           <Post key={post.id} {...post} rotation={rotations[post.id] || 0} theme={theme} currentTheme={currentTheme} />
         ))}
-        <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} />
+        <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} user={user} />
         <div className="flex justify-end">
           <button onClick={scrollToTop} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}>
             <ChevronUp size={20} />
