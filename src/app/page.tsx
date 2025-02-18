@@ -92,7 +92,7 @@ const themes = {
 const getThemeColors = (themeName: string) => {
   switch (themeName) {
     case 'playful-light':
-      return { dark: [255, 213, 128], light: [255, 255, 255] }  // #FFD580
+      return { dark: [255, 0, 0], light: [255, 255, 255] }  // #FFD580
     case 'playful-dark':
       return { dark: [0, 0, 0], light: [203, 166, 247] }  // #cba6f7
     default:
@@ -566,7 +566,15 @@ export default function Home() {
     setCurrentTheme(current => {
       const themeOrder: (keyof typeof themes)[] = ['playful-light', 'playful-dark', 'corpo-light', 'corpo-dark']
       const currentIndex = themeOrder.indexOf(current)
-      return themeOrder[(currentIndex + 1) % themeOrder.length]
+      const newTheme = themeOrder[(currentIndex + 1) % themeOrder.length]
+    
+      // if switching to a playful theme, regenerate rotations
+      if (newTheme.startsWith('playful')) {
+        const postIds = ['pinned', ...filteredPosts.map(p => p.id)]
+        generateRotations(postIds)
+      }
+    
+      return newTheme
     })
   }
 
