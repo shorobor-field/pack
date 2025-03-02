@@ -810,7 +810,7 @@ const handleRead = async (postId: string) => {
             </div>
             <ChevronDown size={14} className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`} />
           </div>
-          <div className="divide-y divide-dashed">
+          <div className={`divide-y divide-dashed divide-${theme.border.replace('border-', '')}`}>
             {tags.map(tag => (
               <div
                 key={tag}
@@ -902,7 +902,7 @@ const handleRead = async (postId: string) => {
               </div>
               <ChevronDown size={14} className={`transform transition-transform duration-200 ${isNavExpanded ? 'rotate-180' : ''}`} />
             </div>
-            <div className="divide-y divide-dashed">
+            <div className={`divide-y divide-dashed divide-${theme.border.replace('border-', '')}`}>
               {tags.map(tag => (
                 <div
                   key={tag}
