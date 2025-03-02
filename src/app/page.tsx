@@ -73,7 +73,7 @@ const themes = {
     rounded: '',
     textArea: 'bg-transparent',
     rotate: false,
-    fontFamily: 'font-jetbrains-mono'
+    fontFamily: 'font-geist-mono'
   },
   'corpo-dark': {
     bg: 'bg-[#1F1F1F]',
@@ -90,7 +90,7 @@ const themes = {
     rounded: '',
     textArea: 'bg-transparent',
     rotate: false,
-    fontFamily: 'font-jetbrains-mono'
+    fontFamily: 'font-geist-mono'
   }
 } as const
 
