@@ -14,7 +14,7 @@ export default {
       },
       fontFamily: {
         'courier': ['Courier', 'monospace'],
-        'jetbrains-mono': ['JetBrains Mono', 'monospace'],
+        'geist-mono': ['var(--font-geist-mono)', 'monospace'],
       },
     },
   },
