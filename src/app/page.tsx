@@ -38,7 +38,7 @@ const themes = {
     textMuted: 'text-gray-600',
     rounded: 'rounded-lg',
     textArea: 'bg-transparent',
-    rotate: true
+    rotate: true,
     fontFamily: 'font-courier'
   },
   'playful-dark': {
@@ -55,7 +55,7 @@ const themes = {
     textMuted: 'text-[#9399b2]',
     rounded: 'rounded-lg',
     textArea: 'bg-transparent',
-    rotate: true
+    rotate: true,
     fontFamily: 'font-courier'
   },
   'corpo-light': {
@@ -72,7 +72,7 @@ const themes = {
     textMuted: 'text-gray-600',
     rounded: '',
     textArea: 'bg-transparent',
-    rotate: false
+    rotate: false,
     fontFamily: 'font-jetbrains-mono'
   },
   'corpo-dark': {
@@ -89,7 +89,7 @@ const themes = {
     textMuted: 'text-gray-400',
     rounded: '',
     textArea: 'bg-transparent',
-    rotate: false
+    rotate: false,
     fontFamily: 'font-jetbrains-mono'
   }
 } as const
