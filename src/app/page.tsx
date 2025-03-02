@@ -754,13 +754,13 @@ const handleRead = async (postId: string) => {
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
   
-const createPost = async (content: string, image?: string) => {
+  const createPost = async (content: string, image?: string) => {
     if (!user) return
 
     // Check for logout command
     if (content === "🐕 logout") {
       localStorage.removeItem('pack-user');
-      window.location.reload();
+      setUser(null);
       return;
     }
 
