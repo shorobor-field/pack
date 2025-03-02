@@ -12,6 +12,10 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        'courier': ['Courier', 'monospace'],
+        'jetbrains-mono': ['JetBrains Mono', 'monospace'],
+      },
     },
   },
   plugins: [],
