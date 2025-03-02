@@ -939,17 +939,22 @@ const handleRead = async (postId: string) => {
           {filteredPosts
             .slice()
             .reverse()
-            .map(post => (
-              <Post 
-                key={post.id} 
-                {...post} 
-                rotation={rotations[post.id] || 0} 
-                theme={theme} 
-                currentTheme={currentTheme}
-                onRead={handleRead}
-                currentUser={user}
-              />
-            ))}
+            .map(post => {
+              const parentPost = post.parent_id ? posts.find(p => p.id === post.parent_id) : undefined;
+              return (
+                <Post 
+                  key={post.id} 
+                  {...post} 
+                  rotation={rotations[post.id] || 0} 
+                  theme={theme} 
+                  currentTheme={currentTheme}
+                  onRead={handleRead}
+                  onReply={handleReply}
+                  currentUser={user}
+                  parent={parentPost}
+                />
+              );
+            })}
 
           {user ? (
             <NewPostEditor 
