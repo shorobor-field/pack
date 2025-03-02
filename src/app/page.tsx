@@ -381,11 +381,12 @@ function Post({
        )}
        
        <div className={`prose prose-sm max-w-none ${theme.fontFamily} ${theme.text}`}>
-         <ReactMarkdown remarkPlugins={[remarkGfm]} 
+         <ReactMarkdown 
+           remarkPlugins={[remarkGfm]} 
            components={{ 
              ul: (props) => <ul className="list-disc pl-5" {...props} />, 
              ol: (props) => <ol className="list-decimal pl-5" {...props} />,
-             p: (props) => <p className="whitespace-pre-line" {...props} />
+             p: ({node, ...props}) => <p style={{whiteSpace: 'pre-wrap'}} {...props} />
            }}
          >
            {content}
