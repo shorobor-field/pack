@@ -957,6 +957,8 @@ const handleRead = async (postId: string) => {
               theme={theme} 
               themeName={currentTheme} 
               user={user as User} 
+              replyingTo={replyingTo}
+              onCancelReply={() => setReplyingTo(null)}
             />
           ) : null}
           
