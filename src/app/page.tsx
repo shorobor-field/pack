@@ -386,7 +386,7 @@ function Post({
            components={{ 
              ul: (props) => <ul className="list-disc pl-5" {...props} />, 
              ol: (props) => <ol className="list-decimal pl-5" {...props} />,
-             p: (props) => <p style={{whiteSpace: 'pre-wrap'}} {...props} />
+             p: (props) => <p style={{whiteSpace: 'pre-wrap'}} {...props} />,
              a: (props) => <a className="font-bold underline" {...props} />
            }}
          >
