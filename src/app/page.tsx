@@ -236,7 +236,6 @@ function processImage(img: HTMLImageElement, themeName: string): Promise<string>
 function formatPostDate(timestamp: string) {
   const date = new Date(timestamp)
   const now = new Date()
-  const [replyingTo, setReplyingTo] = useState<Post | null>(null)
   
   if (isAfter(date, sub(now, { hours: 1 }))) {
     return formatDistance(date, now, { addSuffix: true })
@@ -590,6 +589,7 @@ export default function Home() {
   const [unreadTags, setUnreadTags] = useState<Set<string>>(new Set())
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const [isNavExpanded, setIsNavExpanded] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<Post | null>(null)
   
   const [currentTheme, setCurrentTheme] = useState<keyof typeof themes>('corpo-light')
 
@@ -613,7 +613,7 @@ export default function Home() {
 
     // update document bg color
     document.documentElement.style.backgroundColor = bgColor
-  }, [currentTheme])
+  }, [currentTheme, theme.bg])
   
   const cycleTheme = () => {
     setCurrentTheme(current => {
@@ -879,12 +879,6 @@ const handleRead = async (postId: string) => {
         setUser(selectedUser)
         localStorage.setItem('pack-user', JSON.stringify(selectedUser))
       }} theme={theme} />
-    </div>
-  )
-
-  return (
-    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text}`}>
-      {content}
     </div>
   )
 
