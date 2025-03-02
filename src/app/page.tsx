@@ -260,9 +260,8 @@ function formatPostDate(timestamp: string) {
   return format(date, 'dd-MM-yyyy')
 }
 
-// replace the current NameSelector with this
 function NameSelector({ onSelect, theme }: { 
-  onSelect: (user: User) => void
+  onSelect: (user: User) => void,
   theme: typeof themes[keyof typeof themes]
 }) {
   const users = [
@@ -288,7 +287,7 @@ function NameSelector({ onSelect, theme }: {
             className={`${theme.rounded} border ${theme.border} ${theme.card} 
               p-2 ${theme.text} transition-all ${theme.accentHover}`}
           >
-            <span className=${theme.fontFamily}>{user.name}</span>
+            <span className={theme.fontFamily}>{user.name}</span>
           </button>
         ))}
       </div>
