@@ -754,11 +754,21 @@ const handleRead = async (postId: string) => {
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
   
-  const createPost = async (content: string, image?: string) => {
+const createPost = async (content: string, image?: string) => {
     if (!user) return
 
     // Check for logout command
     if (content === "🐕 logout") {
+      localStorage.removeItem('pack-user');
+      setUser(null);
+      return;
+    }
+
+    // List of valid users - should match the ones in NameSelector
+    const validUsers = ['raiyan', 'zarin', 'jeba', 'inan'];
+    
+    // If somehow user exists but name isn't valid, reset it
+    if (!validUsers.includes(user.name)) {
       localStorage.removeItem('pack-user');
       setUser(null);
       return;
@@ -799,7 +809,7 @@ const handleRead = async (postId: string) => {
       console.error('Error creating post:', err)
     }
   }
-  
+    
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
   
