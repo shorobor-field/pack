@@ -793,6 +793,7 @@ const handleRead = async (postId: string) => {
   
   const pinnedPost = pinnedPosts[activeTag]
   const filteredPosts = posts.filter(post => post.tags.includes(activeTag))
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const content = user ? (
     <div className="mx-auto max-w-2xl px-4 py-4">
       <div className="mb-6 flex items-center justify-between">
