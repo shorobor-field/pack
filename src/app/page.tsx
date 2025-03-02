@@ -384,7 +384,8 @@ function Post({
          <ReactMarkdown remarkPlugins={[remarkGfm]} 
            components={{ 
              ul: (props) => <ul className="list-disc pl-5" {...props} />, 
-             ol: (props) => <ol className="list-decimal pl-5" {...props} /> 
+             ol: (props) => <ol className="list-decimal pl-5" {...props} />
+             p: (props) => <p className="whitespace-pre-line" {...props} />
            }}
          >
            {content}
@@ -459,7 +460,7 @@ function NewPostEditor({ onSubmit, theme, themeName, user, replyingTo, onCancelR
   }
 
   const handleSubmit = () => {
-    if (!content.trim() && !image) return
+    if ((!content || content.trim() === '') && !image) return
     onSubmit(content, image || undefined)
     setContent('')
     setImage(null)
