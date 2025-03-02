@@ -602,6 +602,15 @@ export default function Home() {
     const saved = localStorage.getItem('pack-theme')
     if (saved && (saved === 'playful-light' || saved === 'playful-dark' || saved === 'corpo-light' || saved === 'corpo-dark')) {
       setCurrentTheme(saved)
+    
+      // Generate rotations on initial load if theme is playful
+      if (saved.startsWith('playful')) {
+        // Need to wait for posts to load before generating rotations
+        setTimeout(() => {
+          const postIds = ['pinned', ...posts.filter(p => p.tags.includes(activeTag)).map(p => p.id)]
+          generateRotations(postIds)
+        }, 100)
+      }
     }
   }, [])
 
@@ -662,7 +671,7 @@ export default function Home() {
         return
       }
       setPosts(data)
-      
+    
       const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
       if (lastRead) {
         const hasUnread = data.some(post => 
@@ -673,14 +682,20 @@ export default function Home() {
           setUnreadTags(prev => new Set([...prev, activeTag]))
         }
       }
-      
+    
+      // Generate rotations if on a playful theme
+      if (currentTheme.startsWith('playful')) {
+        const postIds = ['pinned', ...data.filter(p => p.tags.includes(activeTag)).map(p => p.id)]
+        generateRotations(postIds)
+      }
+    
       setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
     }
 
     fetchPosts()
     const interval = setInterval(fetchPosts, 30000)
     return () => clearInterval(interval)
-  }, [activeTag])
+  }, [activeTag, currentTheme])
 
   useEffect(() => {
     localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
