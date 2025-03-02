@@ -754,8 +754,15 @@ const handleRead = async (postId: string) => {
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
   }
   
-  const createPost = async (content: string, image?: string) => {
+const createPost = async (content: string, image?: string) => {
     if (!user) return
+
+    // Check for logout command
+    if (content === "🐕 logout") {
+      localStorage.removeItem('pack-user')
+      window.location.reload()
+      return
+    }
 
     const post = {
       content,
@@ -792,7 +799,7 @@ const handleRead = async (postId: string) => {
       console.error('Error creating post:', err)
     }
   }
-
+  
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
   
