@@ -20,6 +20,7 @@ type Post = {
   system?: boolean
   readers?: string[]
   image?: string
+  parent_id?: string
 }
 
 const themes = {
@@ -92,7 +93,7 @@ const themes = {
 const getThemeColors = (themeName: string) => {
   switch (themeName) {
     case 'playful-light':
-      return { dark: [237, 170, 36], light: [255, 255, 255] }  // #FFD580
+      return { dark: [150, 100, 2], light: [255, 255, 255] }  // #FFD580
     case 'playful-dark':
       return { dark: [0, 0, 0], light: [203, 166, 247] }  // #cba6f7
     default:
@@ -235,6 +236,7 @@ function processImage(img: HTMLImageElement, themeName: string): Promise<string>
 function formatPostDate(timestamp: string) {
   const date = new Date(timestamp)
   const now = new Date()
+  const [replyingTo, setReplyingTo] = useState<Post | null>(null)
   
   if (isAfter(date, sub(now, { hours: 1 }))) {
     return formatDistance(date, now, { addSuffix: true })
@@ -302,14 +304,18 @@ function Post({
  theme, 
  currentTheme,
  onRead,
+ onReply,
  currentUser,
- id 
+ id,
+ parent
 }: Omit<Post, 'tags'> & { 
  theme: typeof themes[keyof typeof themes],
  currentTheme: keyof typeof themes,
  onRead?: (id: string) => void,
+ onReply?: (post: Post) => void,
  currentUser?: User | null,
- id: string
+ id: string,
+ parent?: Post
 }) {
  const [processedImage, setProcessedImage] = useState<string | undefined>(image)
  const style = theme.rotate ? { transform: `rotate(${rotation}deg)` } : {}
@@ -320,10 +326,16 @@ function Post({
    }
  }, [image, currentTheme])
 
+ const truncateText = (text: string, maxWords = 20) => {
+   const words = text.split(' ');
+   const truncated = words.slice(0, maxWords).join(' ');
+   return words.length > maxWords ? `${truncated}...` : truncated;
+ };
+
  return (
    <div style={style}>
      <div className={`relative border ${theme.border} ${system ? theme.systemCard : theme.card} 
-       ${theme.cardShadow} ${theme.rounded} p-6`}>
+       ${theme.cardShadow} ${theme.rounded} p-6 group`}>
        {system && theme.rotate && (
          <div className="absolute -top-3 left-1/2 h-6 w-6 -translate-x-1/2 transform rounded-full bg-red-500" />
        )}
@@ -337,6 +349,22 @@ function Post({
            </div>
          )}
        </div>
+       
+       {/* Parent post quote */}
+       {parent && (
+         <div className={`mb-4 rounded-${theme.rounded ? 'lg' : 'none'} border border-dashed ${theme.border} bg-opacity-50 ${theme.accent} p-3`}>
+           <div className={`mb-1 text-xs ${theme.textMuted}`}>
+             replying to {parent.user}
+           </div>
+           <p className={`text-sm ${theme.text}`}>{truncateText(parent.content)}</p>
+           {parent.image && (
+             <div className={`mt-1 flex items-center space-x-1 text-xs ${theme.textMuted}`}>
+               <LucideImage size={12} />
+               <span>image attached</span>
+             </div>
+           )}
+         </div>
+       )}
        
        {processedImage && (
          <div className="mb-4">
@@ -367,14 +395,24 @@ function Post({
          </div>
        )}
        
-       {!system && user !== currentUser?.name && currentUser?.name && !readers.includes(currentUser.name) && (
-         <div className="mt-4 flex justify-end">
-           <button
-             onClick={() => onRead?.(id)}
-             className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
-           >
-             <BookOpen size={16} />
-           </button>
+       {!system && (
+         <div className="mt-4 flex justify-end space-x-2">
+           {user !== currentUser?.name && currentUser?.name && !readers.includes(currentUser.name) && (
+             <button
+               onClick={() => onRead?.(id)}
+               className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
+             >
+               <BookOpen size={16} />
+             </button>
+           )}
+           {currentUser && (
+             <button
+               onClick={() => onReply?.({ id, content, user, timestamp, image, tags: [] })}
+               className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110 opacity-0 group-hover:opacity-100`}
+             >
+               <MessageSquare size={16} />
+             </button>
+           )}
          </div>
        )}
      </div>
@@ -382,11 +420,13 @@ function Post({
  )
 }
 
-function NewPostEditor({ onSubmit, theme, themeName, user }: { 
+function NewPostEditor({ onSubmit, theme, themeName, user, replyingTo, onCancelReply }: { 
   onSubmit: (content: string, image?: string) => void
   theme: typeof themes[keyof typeof themes]
   themeName: keyof typeof themes
   user: User
+  replyingTo?: Post | null
+  onCancelReply?: () => void
 }) {
   const [content, setContent] = useState('')
   const [image, setImage] = useState<string | null>(null)
@@ -432,6 +472,19 @@ function NewPostEditor({ onSubmit, theme, themeName, user }: {
 
   return (
     <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
+      {replyingTo && (
+        <div className={`mb-3 flex items-center justify-between rounded-${theme.rounded ? 'lg' : 'none'} border border-dashed ${theme.border} bg-opacity-50 ${theme.accent} p-2`}>
+          <div className={`text-xs ${theme.text}`}>
+            replying to {replyingTo.user}
+          </div>
+          <button 
+            onClick={onCancelReply}
+            className={`text-xs ${theme.textMuted} hover:${theme.text}`}
+          >
+            cancel
+          </button>
+        </div>
+      )}
       {image && (
         <div className="mb-4">
           <Image 
@@ -690,6 +743,12 @@ const handleRead = async (postId: string) => {
   }
 }
 
+
+  const handleReply = (post: Post) => {
+    setReplyingTo(post)
+    setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
+  }
+  
   const createPost = async (content: string, image?: string) => {
     if (!user) return
 
@@ -698,7 +757,8 @@ const handleRead = async (postId: string) => {
       user: user.name,
       tags: [activeTag],
       timestamp: new Date().toISOString(),
-      image
+      image,
+      parent_id: replyingTo?.id
     }
 
     try {
@@ -709,11 +769,11 @@ const handleRead = async (postId: string) => {
       })
 
       if (!res.ok) throw new Error('Failed to create post')
-    
+  
       const data = await res.json()
       console.log('api response:', data)
       setPosts(prev => [data, ...prev])
-    
+  
       if (theme.rotate) {
         setRotations(prev => ({
           ...prev,
@@ -721,6 +781,7 @@ const handleRead = async (postId: string) => {
         }))
       }
 
+      setReplyingTo(null) // Reset reply state
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
     } catch (err) {
       console.error('Error creating post:', err)
@@ -781,18 +842,30 @@ const handleRead = async (postId: string) => {
             onRead={handleRead}
           />
         )}
-        {filteredPosts.slice().reverse().map(post => (
-          <Post 
-            key={post.id} 
-            {...post} 
-            rotation={rotations[post.id] || 0} 
-            theme={theme} 
-            currentTheme={currentTheme}
-            currentUser={user}
-            onRead={handleRead}
-          />
-        ))}
-        <NewPostEditor onSubmit={createPost} theme={theme} themeName={currentTheme} user={user} />
+        {filteredPosts.slice().reverse().map(post => {
+          const parentPost = post.parent_id ? posts.find(p => p.id === post.parent_id) : undefined;
+          return (
+            <Post 
+              key={post.id} 
+              {...post} 
+              rotation={rotations[post.id] || 0} 
+              theme={theme} 
+              currentTheme={currentTheme}
+              currentUser={user}
+              onRead={handleRead}
+              onReply={handleReply}
+              parent={parentPost}
+            />
+          );
+        })}
+        <NewPostEditor 
+          onSubmit={createPost} 
+          theme={theme} 
+          themeName={currentTheme} 
+          user={user} 
+          replyingTo={replyingTo}
+          onCancelReply={() => setReplyingTo(null)}
+        />
         <div className="flex justify-end">
           <button onClick={scrollToTop} className={`${theme.rounded} p-2 ${theme.textMuted} transition-all hover:scale-110 ${theme.accentHover}`}>
             <ChevronUp size={20} />
