@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { formatDistance, format, isAfter, sub } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
-import { Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image as LucideImage, BookOpen } from 'lucide-react'
+import { X, Layout, MessageSquare, FileText, Brain, Link as LinkIcon, ChevronUp, ChevronDown, Send, Palette, Image as LucideImage, BookOpen } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import Image from 'next/image'
 
@@ -354,7 +354,7 @@ function Post({
        
        {/* Parent post quote */}
        {parent && (
-         <div className={`mb-4 rounded-${theme.rounded ? 'lg' : 'none'} border border-dashed ${theme.border} bg-opacity-50 ${theme.accent} p-3`}>
+         <div className={`mb-4 rounded-${theme.rounded ? 'lg' : 'none'} border border-dashed ${theme.border} ${currentTheme.startsWith('corpo') ? `bg-opacity-50 ${theme.accent}` : ''} p-3`}>
            <div className={`mb-1 text-xs ${theme.textMuted}`}>
              replying to {parent.user}
            </div>
@@ -477,18 +477,19 @@ function NewPostEditor({ onSubmit, theme, themeName, user, replyingTo, onCancelR
   return (
     <div className={`${theme.card} ${theme.rounded} ${theme.cardShadow} border ${theme.border} p-4`}>
       {replyingTo && (
-        <div className={`mb-3 flex items-center justify-between rounded-${theme.rounded ? 'lg' : 'none'} border border-dashed ${theme.border} bg-opacity-50 ${theme.accent} p-2`}>
-          <div className={`text-xs ${theme.text}`}>
-            replying to {replyingTo.user}
+        {replyingTo && (
+          <div className={`mb-3 flex items-center justify-between rounded-${theme.rounded ? 'lg' : 'none'} border border-dashed ${theme.border} ${currentTheme.startsWith('corpo') ? `bg-opacity-50 ${theme.accent}` : ''} p-2`}>
+            <div className={`text-xs ${theme.text}`}>
+              replying to {replyingTo.user}
+            </div>
+            <button 
+              onClick={onCancelReply}
+              className={`text-xs ${theme.textMuted} hover:${theme.text}`}
+            >
+              <X size={16} />
+            </button>
           </div>
-          <button 
-            onClick={onCancelReply}
-            className={`text-xs ${theme.textMuted} hover:${theme.text}`}
-          >
-            cancel
-          </button>
-        </div>
-      )}
+        )}
       {image && (
         <div className="mb-4">
           <Image 
