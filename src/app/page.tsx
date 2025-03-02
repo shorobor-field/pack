@@ -39,6 +39,7 @@ const themes = {
     rounded: 'rounded-lg',
     textArea: 'bg-transparent',
     rotate: true
+    fontFamily: 'font-courier'
   },
   'playful-dark': {
     bg: 'bg-[#1e1e2e]',
@@ -55,6 +56,7 @@ const themes = {
     rounded: 'rounded-lg',
     textArea: 'bg-transparent',
     rotate: true
+    fontFamily: 'font-courier'
   },
   'corpo-light': {
     bg: 'bg-gray-50',
@@ -71,6 +73,7 @@ const themes = {
     rounded: '',
     textArea: 'bg-transparent',
     rotate: false
+    fontFamily: 'font-jetbrains-mono'
   },
   'corpo-dark': {
     bg: 'bg-[#1F1F1F]',
@@ -87,6 +90,7 @@ const themes = {
     rounded: '',
     textArea: 'bg-transparent',
     rotate: false
+    fontFamily: 'font-jetbrains-mono'
   }
 } as const
 
@@ -273,7 +277,7 @@ function NameSelector({ onSelect, theme }: {
       <div className={`mb-4 border-b border-dashed ${theme.border} pb-2`}>
         <div className={`text-xs ${theme.textMuted}`}>system</div>
       </div>
-      <div className={`prose prose-sm max-w-none font-mono ${theme.text} mb-4`}>
+      <div className={`prose prose-sm max-w-none ${theme.fontFamily} ${theme.text} mb-4`}>
         who are you?
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -284,7 +288,7 @@ function NameSelector({ onSelect, theme }: {
             className={`${theme.rounded} border ${theme.border} ${theme.card} 
               p-2 ${theme.text} transition-all ${theme.accentHover}`}
           >
-            <span className="font-mono">{user.name}</span>
+            <span className=${theme.fontFamily}>{user.name}</span>
           </button>
         ))}
       </div>
@@ -377,7 +381,7 @@ function Post({
          </div>
        )}
        
-       <div className={`prose prose-sm max-w-none font-mono ${theme.text}`}>
+       <div className={`prose prose-sm max-w-none ${theme.fontFamily} ${theme.text}`}>
          <ReactMarkdown remarkPlugins={[remarkGfm]} 
            components={{ 
              ul: (props) => <ul className="list-disc pl-5" {...props} />, 
@@ -389,7 +393,7 @@ function Post({
        </div>
        
        {readers.length > 0 && (
-         <div className={`mt-4 text-xs ${theme.textMuted} font-mono`}>
+         <div className={`mt-4 text-xs ${theme.textMuted} ${theme.fontFamily}`}>
            read by {readers.join(', ')}
          </div>
        )}
@@ -502,7 +506,7 @@ function NewPostEditor({ onSubmit, theme, themeName, user, replyingTo, onCancelR
         </div>
       )}
       
-      <div className={`prose prose-sm w-full font-mono ${theme.text}`}>
+      <div className={`prose prose-sm w-full ${theme.fontFamily} ${theme.text}`}>
         <div className="min-h-[5rem]">
           <textarea
             value={content}
@@ -538,7 +542,7 @@ function NewPostEditor({ onSubmit, theme, themeName, user, replyingTo, onCancelR
               }
             }}
             placeholder={`what's on your mind, ${user.name}?`}
-            className={`w-full resize-none ${theme.textArea} font-mono ${theme.text} 
+            className={`w-full resize-none ${theme.textArea} ${theme.fontFamily} ${theme.text} 
               placeholder-gray-500 focus:outline-none`}
             rows={3}
           />
@@ -884,7 +888,7 @@ const handleRead = async (postId: string) => {
   )
 
   return (
-    <div className={`min-h-screen ${theme.bg} font-mono ${theme.text}`}>
+    <div className={`min-h-screen ${theme.bg} ${theme.fontFamily} ${theme.text}`}>
       <div className="mx-auto max-w-2xl px-4 py-4">
         <div className="mb-6 flex items-center justify-between">
           <div className={`flex-grow ${theme.nav} ${theme.rounded} ${theme.navShadow} overflow-hidden transition-all duration-200`} 
