@@ -662,18 +662,7 @@ export default function Home() {
         return
       }
       setPosts(data)
-      
-      const lastRead = localStorage.getItem(`lastRead_${activeTag}`)
-      if (lastRead) {
-        const hasUnread = data.some(post => 
-          post.tags.includes(activeTag) && 
-          new Date(post.timestamp) > new Date(lastRead)
-        )
-        if (hasUnread) {
-          setUnreadTags(prev => new Set([...prev, activeTag]))
-        }
-      }
-      
+    
       setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100)
     }
 
@@ -683,13 +672,25 @@ export default function Home() {
   }, [activeTag])
 
   useEffect(() => {
-    localStorage.setItem(`lastRead_${activeTag}`, new Date().toISOString())
-    setUnreadTags(prev => {
-      const next = new Set(prev)
-      next.delete(activeTag)
-      return next
-    })
-  }, [activeTag])
+    if (!user) return;
+  
+    // Check all posts for each tag to see if there are unread posts
+    const unreadTagsSet = new Set<string>();
+  
+    tags.forEach(tag => {
+      const hasUnreadPosts = posts.some(post => 
+        post.tags.includes(tag) && 
+        post.user !== user.name && // Don't count your own posts as unread
+        (!post.readers || !post.readers.includes(user.name))
+      );
+    
+      if (hasUnreadPosts) {
+        unreadTagsSet.add(tag);
+      }
+    });
+  
+    setUnreadTags(unreadTagsSet);
+  }, [posts, user, tags]);
 
   useEffect(() => {
     localStorage.setItem('pack-theme', currentTheme)
