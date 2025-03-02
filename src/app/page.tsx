@@ -116,7 +116,7 @@ const channelIcons: Record<string, React.ElementType> = {
 const pinnedPosts: Record<string, Post> = {
   timeline: {
     id: 'pinned-timeline',
-    content: "everything goes here. this is the main feed.",
+    content: "a collective journal",
     user: "system",
     tags: ["timeline"],
     system: true,
@@ -124,7 +124,7 @@ const pinnedPosts: Record<string, Post> = {
   },
   discussion: {
     id: 'pinned-discussion',
-    content: "general chat for anything and everything",
+    content: "general channel for anything and everything",
     user: "system",
     tags: ["discussion"],
     system: true,
@@ -132,7 +132,7 @@ const pinnedPosts: Record<string, Post> = {
   },
   docs: {
     id: 'pinned-docs',
-    content: "documentation and longer form writing lives here",
+    content: "documentation and longer form writing",
     user: "system",
     tags: ["docs"],
     system: true,
@@ -140,7 +140,7 @@ const pinnedPosts: Record<string, Post> = {
   },
   neurotech: {
     id: 'pinned-neurotech',
-    content: "discoveries about cognition and productivity",
+    content: "discoveries, possibly to be integrated into the system",
     user: "system",
     tags: ["neurotech"],
     system: true,
