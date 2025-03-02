@@ -390,7 +390,7 @@ function Post({
              a: (props) => <a className="font-bold underline" {...props} />
            }}
          >
-           {content}
+           {content.replace(/\n/g, '  \n')}
          </ReactMarkdown>
        </div>
        
