@@ -404,7 +404,7 @@ function Post({
            {user !== currentUser?.name && currentUser?.name && !readers.includes(currentUser.name) && (
              <button
                onClick={() => onRead?.(id)}
-               className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110`}
+               className={`${theme.rounded} ${theme.accent} p-2 ${theme.text} transition-all hover:scale-110 opacity-0 group-hover:opacity-100`}
              >
                <BookOpen size={16} />
              </button>
