@@ -977,7 +977,12 @@ const createPost = async (content: string, image?: string) => {
               replyingTo={replyingTo}
               onCancelReply={() => setReplyingTo(null)}
             />
-          ) : null}
+          ) : (
+            <NameSelector onSelect={(selectedUser: User) => {
+              setUser(selectedUser)
+              localStorage.setItem('pack-user', JSON.stringify(selectedUser))
+            }} theme={theme} />
+          )}
           
           <div className="flex justify-end">
             <button 
